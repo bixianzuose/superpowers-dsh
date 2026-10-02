@@ -45,6 +45,19 @@ in `AGENTS.md` (or the session's system prompt), and load skills explicitly.
 - `ralph`: fresh-agent iterative loops (only when the human explicitly asks).
 - `skill`: loads a skill's full instructions (see above).
 
+## Session and diagnostic surfaces
+
+Skill-level diagnosis on DSH leans on these paths and commands:
+
+- Session transcripts: `$DSH_HOME/sessions/`, with older copies under
+  `$DSH_HOME/dsh-session-archive/` and rotating logs under `$DSH_HOME/logs/`.
+- Profile state: `$DSH_HOME/profiles/<profile>/` — `package.json` (the
+  dependency specs that pin each plugin), `cordis.yml` / `cordis.patch.yml`
+  (layer composition), and `.plugin-manager/logs/` (install/activation logs).
+- Effective composition: `dsh --profile <profile> --dump-config` — the
+  authoritative list of layers actually mounted.
+- Skill catalog: whatever the session's system prompt lists; packaged skills
+  from this bundle appear under their bare names.
 ## Windows notes
 
 - `pwsh` runs in ConstrainedLanguage under the read-only sandbox; commands

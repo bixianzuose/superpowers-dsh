@@ -1,7 +1,7 @@
 {
   "name": "superpowers-dsh",
-  "description": "Superpowers for the DeepSeek Harness: TDD, debugging, planning, and collaboration skills adapted from obra/superpowers",
-  "version": "0.1.0",
+  "description": "Superpowers for the DeepSeek Harness: TDD, debugging, planning, and collaboration skills adapted from obra/superpowers (skills baseline v6.4.2)",
+  "version": "0.2.0",
   "private": false,
   "type": "module",
   "main": "lib/index.js",
@@ -17,7 +17,11 @@
     "README.md",
     "README.en.md"
   ],
-  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bixianzuose/superpowers-dsh.git"
+  },
+  "homepage": "https://github.com/bixianzuose/superpowers-dsh#readme",  "license": "MIT",
   "keywords": [
     "dsh",
     "deepseek-harness",

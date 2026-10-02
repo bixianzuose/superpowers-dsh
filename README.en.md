@@ -17,6 +17,8 @@ skills of [obra/superpowers](https://github.com/obra/superpowers) (the
 Claude-Code skills library: TDD, debugging, planning, collaboration patterns)
 to DSH's Cordis plugin architecture.
 
+This repo is a fork of [LayneChai/superpowers-dsh](https://github.com/LayneChai/superpowers-dsh): the skills are synced to upstream **obra/superpowers v6.4.2** (which added `diagnosing-superpowers`), with every DSH adaptation preserved.
+
 The plugin registers a skill provider into the **host layer** of the
 `ctx.skills` registry, so every agent preset's scope chain merges these
 skills. Skill bodies ship inside the package (`skills/<name>/SKILL.md`) and
@@ -26,7 +28,7 @@ user configuration.
 ## Install & use in your DeepSeek Harness
 
 A **plugin bundle** for DeepSeek Harness (DSH). Installing it registers the
-14 skills below into the host skill registry, so every agent session in your
+15 skills below into the host skill registry, so every agent session in your
 profile sees them in its skill catalog and can load them with the `skill`
 tool.
 
@@ -56,7 +58,7 @@ tool.
 No global `dsh` install required. Run this from any directory:
 
 ```sh
-npx @deepseek-ai/dsh plugin --profile web add github:LayneChai/superpowers-dsh
+npx @deepseek-ai/dsh plugin --profile web add github:bixianzuose/superpowers-dsh
 ```
 
 Then restart `npx @deepseek-ai/dsh web` (or `dsh web`) and refresh the browser.
@@ -67,7 +69,7 @@ Open the DeepSeek Harness web UI, start a new conversation, and send this
 message:
 
 ```
-Please install the plugin from this link: https://github.com/LayneChai/superpowers-dsh
+Please install the plugin from this link: https://github.com/bixianzuose/superpowers-dsh
 ```
 
 The agent will run the install for you (`dsh plugin --profile web add` →
@@ -76,14 +78,19 @@ type a command. Afterwards you can ask it to run
 `dsh --profile web --dump-config` and confirm a `superpowers-dsh` row is
 present.
 
-### Install from npm (recommended — one command)
+### About the npm `superpowers-dsh` package
 
-The package is published on npm as `superpowers-dsh` (synced to the
-npmmirror mirror for mainland China):
+The `superpowers-dsh` package on npm is **LayneChai's upstream port** (0.1.0,
+skills baseline v6.3.0). This fork is not published to npm, so the two are not
+in sync:
 
 ```sh
+# this installs LayneChai's 0.1.0, not this repo's 0.2.0
 dsh plugin --profile web add superpowers-dsh
 ```
+
+To install this fork, use the GitHub form above, or the tarball / local folder
+form below.
 
 > Use the `dsh plugin` form — a plain `npm install superpowers-dsh` installs
 > the package as a library in the current directory but does **not** register
@@ -93,14 +100,14 @@ dsh plugin --profile web add superpowers-dsh
 
 ```sh
 # from anywhere
-dsh plugin --profile web add https://github.com/LayneChai/superpowers-dsh.git
+dsh plugin --profile web add https://github.com/bixianzuose/superpowers-dsh.git
 ```
 
 ### Install from a tarball or a local folder
 
 ```sh
-# tarball (e.g. the release asset superpowers-dsh-0.1.0.tgz)
-dsh plugin --profile web add C:\path\to\superpowers-dsh-0.1.0.tgz
+# tarball (e.g. the repo-root asset superpowers-dsh-0.2.0.tgz)
+dsh plugin --profile web add C:\path\to\superpowers-dsh-0.2.0.tgz
 
 # or the unpacked package folder (pnpm links it, so edits take effect on restart)
 dsh plugin --profile web add C:\path\to\superpowers-dsh
@@ -154,9 +161,10 @@ dsh plugin --profile web remove superpowers-dsh
 | Skill | Purpose |
 | --- | --- |
 | `using-superpowers` | How to find and use skills; the entry-point skill |
+| `diagnosing-superpowers` | Diagnose why a session went wrong (repeated work, ignored plans, time/time-cost surprises) and build a report for the maintainers |
 | `brainstorming` | Turn ideas into designs through collaborative dialogue |
 | `writing-plans` | Write comprehensive implementation plans from specs |
-| `executing-plans` | Execute a written plan with review checkpoints |
+| `executing-plans` | Execute the plan yourself in this session (native execution: task ledger + one whole-branch review at the end) |
 | `subagent-driven-development` | Dispatch fresh subagents per task with reviews |
 | `dispatching-parallel-agents` | Fan independent work out across parallel agents |
 | `systematic-debugging` | Root-cause-first debugging discipline |
@@ -195,6 +203,30 @@ dsh plugin --profile web remove superpowers-dsh
 - Subagent references map to DSH's `subagent` / `subagent_fork` tools.
 - `brainstorming`'s visual companion adds a Windows note: the Node server
   (`scripts/server.cjs`) runs everywhere; the `.sh` helpers are bash-only.
+- **Skills baseline: obra/superpowers v6.4.2.** Upstream rewrote
+  `executing-plans` as native execution (task ledger, `task-start` /
+  `task-done` scripts, one whole-branch review at the end) and added
+  `diagnosing-superpowers`; this package re-applied every DSH adaptation on
+  top (bare skill names, `subagent` / `subagent_fork` wording, pointers to
+  `dsh-tools.md`).
+- Upstream's per-harness tool references (Claude Code, Codex, Pi, Antigravity,
+  Hermes, Muse) are not shipped here; this bundle carries only the DSH
+  mapping, `references/dsh-tools.md`.
+
+## Staying in sync with upstream
+
+This repo has three remotes: `origin` (this fork), `source` (LayneChai's port)
+and `upstream` (obra/superpowers). To move to a newer upstream release:
+
+```sh
+git fetch upstream --tags
+git diff --stat v6.4.2 <new-tag> -- skills    # see the change surface first
+```
+
+Then take the new upstream tag as the base and re-apply the DSH adaptations:
+strip the `superpowers:` namespace prefixes, add the `**Note:** On the DeepSeek
+Harness ...` note, and drop the non-DSH references. The `vendor` branch keeps
+the last merge (v6.3.0 base → 0.1.0 port → v6.4.2 merge) as a template.
 
 ## Adding your own skills
 

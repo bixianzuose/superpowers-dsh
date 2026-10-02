@@ -17,6 +17,8 @@
 （Claude-Code 技能库：TDD、调试、规划、协作模式）移植到 DSH 的 Cordis
 插件架构上。
 
+本仓库是 [LayneChai/superpowers-dsh](https://github.com/LayneChai/superpowers-dsh) 的 fork：技能内容已同步到上游 **obra/superpowers v6.4.2**（新增 `diagnosing-superpowers`），DSH 移植改动全部保留。
+
 插件会向 `ctx.skills` 注册表的 **host 层** 注册一个技能提供者，因此每个
 agent preset 的作用域链都会合并这些技能。技能正文随包分发
 （`skills/<name>/SKILL.md`），通过 `import.meta.url` 定位——这是包的
@@ -24,7 +26,7 @@ agent preset 的作用域链都会合并这些技能。技能正文随包分发
 
 ## 在 DeepSeek Harness 中安装与使用
 
-这是 DeepSeek Harness 的**插件包**。安装后会把下面的 14 个技能注册进
+这是 DeepSeek Harness 的**插件包**。安装后会把下面的 15 个技能注册进
 host 技能注册表，你 profile 里的每个 agent 会话都能在技能目录中看到它们，
 并可用 `skill` 工具加载。
 
@@ -33,7 +35,7 @@ host 技能注册表，你 profile 里的每个 agent 会话都能在技能目�
 不需要先全局安装 `dsh`，在任意目录执行：
 
 ```sh
-npx @deepseek-ai/dsh plugin --profile web add github:LayneChai/superpowers-dsh
+npx @deepseek-ai/dsh plugin --profile web add github:bixianzuose/superpowers-dsh
 ```
 
 装完后重启 `npx @deepseek-ai/dsh web`（或 `dsh web`），刷新浏览器即可。
@@ -43,20 +45,23 @@ npx @deepseek-ai/dsh plugin --profile web add github:LayneChai/superpowers-dsh
 打开 DeepSeek Harness（Web 界面），新建对话，把下面这句话发给它：
 
 ```
-帮我安装这个链接里边的插件：https://github.com/LayneChai/superpowers-dsh
+帮我安装这个链接里边的插件：https://github.com/bixianzuose/superpowers-dsh
 ```
 
 Agent 会自动完成安装（`dsh plugin --profile web add` → 重启 profile →
 验证技能注册），无需你手动敲任何命令。装完后你可以在对话里让它运行
 `dsh --profile web --dump-config`，确认输出里有 `superpowers-dsh` 行。
 
-### 从 npm 安装（推荐，一条命令）
+### 关于 npm 上的 `superpowers-dsh`
 
-包已发布到 npm，名为 `superpowers-dsh`（国内会自动同步到 npmmirror 镜像）：
+npm 上的 `superpowers-dsh` 是**上游移植作者 LayneChai 发布的包**（0.1.0，技能基线 v6.3.0）。本 fork 未发布 npm 包，两者不同步：
 
 ```sh
+# 这条命令装到的是 LayneChai 的 0.1.0，不是本仓库的 0.2.0
 dsh plugin --profile web add superpowers-dsh
 ```
+
+要装本 fork，用上面的 GitHub 方式或下面的 tarball / 本地文件夹方式。
 
 > 必须用 `dsh plugin` 形式——直接 `npm install superpowers-dsh` 只会把包当
 > 普通库装到当前目录，**不会**注册进任何 DeepSeek Harness profile，技能
@@ -66,14 +71,14 @@ dsh plugin --profile web add superpowers-dsh
 
 ```sh
 # 任意目录下执行
-dsh plugin --profile web add https://github.com/LayneChai/superpowers-dsh.git
+dsh plugin --profile web add https://github.com/bixianzuose/superpowers-dsh.git
 ```
 
 ### 从 tarball 或本地文件夹安装
 
 ```sh
-# tarball（例如 Release 里的 superpowers-dsh-0.1.0.tgz）
-dsh plugin --profile web add C:\路径\to\superpowers-dsh-0.1.0.tgz
+# tarball（例如仓库根目录的 superpowers-dsh-0.2.0.tgz）
+dsh plugin --profile web add C:\路径\to\superpowers-dsh-0.2.0.tgz
 
 # 或解压后的插件文件夹（pnpm 以链接方式安装，改完重启即生效）
 dsh plugin --profile web add C:\路径\to\superpowers-dsh
@@ -124,9 +129,10 @@ dsh plugin --profile web remove superpowers-dsh
 | 技能 | 用途 |
 | --- | --- |
 | `using-superpowers` | 如何查找和使用技能；入口技能 |
+| `diagnosing-superpowers` | 复盘一次会话为什么走歪（重复劳动、计划被忽略、耗时与花费异常），并生成给上游维护者的报告 |
 | `brainstorming` | 通过协作对话把想法变成设计 |
 | `writing-plans` | 根据规格编写全面的实施计划 |
-| `executing-plans` | 按书面计划执行，带评审检查点 |
+| `executing-plans` | 在当前会话内自己按计划执行（原生执行：任务台账 + 收尾一次整体评审） |
 | `subagent-driven-development` | 每个任务派发全新子代理并评审 |
 | `dispatching-parallel-agents` | 把独立工作扇出到并行代理 |
 | `systematic-debugging` | 先找根因的调试纪律 |
@@ -162,6 +168,27 @@ dsh plugin --profile web remove superpowers-dsh
 - 子代理引用映射到 DSH 的 `subagent` / `subagent_fork` 工具。
 - `brainstorming` 的视觉伴侣补充了 Windows 说明：Node 服务
   （`scripts/server.cjs`）全平台可跑；`.sh` 辅助脚本仅限 bash。
+- **技能基线：obra/superpowers v6.4.2。** 上游这一版把 `executing-plans`
+  重写为"原生执行"（任务台账、`task-start` / `task-done` 脚本、收尾整体评审），
+  并新增 `diagnosing-superpowers`；本包同步后重放了全部 DSH 适配（去前缀、
+  `subagent` / `subagent_fork` 说明、指向 `dsh-tools.md`）。
+- 上游按 harness 分发的工具参考（Claude Code / Codex / Pi / Antigravity /
+  Hermes / Muse）未随包分发，本包只带 DSH 映射 `references/dsh-tools.md`。
+
+## 与上游同步
+
+本仓库已配置三个 remote：`origin`（本 fork）、`source`（LayneChai 的移植仓库）、
+`upstream`（obra/superpowers）。下次同步上游新版：
+
+```sh
+git fetch upstream --tags
+git diff --stat v6.4.2 <新 tag> -- skills    # 先看改动面
+```
+
+然后以上游新 tag 为底重放 DSH 适配：去掉 `superpowers:` 命名空间前缀、
+补 `**Note:** On the DeepSeek Harness ...` 说明、裁掉非 DSH 的 references。
+`vendor` 分支保留着上一轮的合并过程（v6.3.0 基准 → 0.1.0 移植态 → v6.4.2 合并），
+可作为下次同步的模板。
 
 ## 添加自己的技能
 
