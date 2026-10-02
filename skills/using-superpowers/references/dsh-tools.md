@@ -30,7 +30,7 @@ in `AGENTS.md` (or the session's system prompt), and load skills explicitly.
 | `AskUserQuestion` | `ask_user_question` | Questions return stable ids echoed in answers. |
 | `WebSearch` | `web_search` | Returns a summary answer plus source URLs. |
 | `LS` (file list) | `glob` + `read` | There is no dedicated `ls` tool. |
-| Hooks (PreToolUse etc.) | None | DSH has no hook system. Enforce workflows through skills themselves. |
+| Hooks (SessionStart, PreToolUse, ...) | `@deepseek-ai/dsh-hooks-claude-code` bridge | DSH runs Claude Code's command-hook subset on its own seams (`@deepseek-ai/dsh-hook-protocol`); mount the bridge in a profile patch and point `configPath` at a `hooks.json`. |
 | `/commands` slash commands | `dsh` CLI + `command-*` plugins | Slash-command UI lives in the web surface. |
 | Plan mode | `exit_plan_mode` | Present the plan; on approval leave plan mode and execute. |
 | `ReadImage` | `read_image` | PNG/JPEG/WebP/GIF only. |
@@ -58,6 +58,20 @@ Skill-level diagnosis on DSH leans on these paths and commands:
   authoritative list of layers actually mounted.
 - Skill catalog: whatever the session's system prompt lists; packaged skills
   from this bundle appear under their bare names.
+## Hooks on DSH
+
+DSH keeps no hook config of its own, but it does run Claude Code's command-hook
+subset: mount `@deepseek-ai/dsh-hooks-claude-code` in a profile patch with
+`configPath` pointing at a `hooks.json`, and `SessionStart`, `UserPromptSubmit`,
+`PreToolUse`, `PostToolUse`, `Stop`, `SubagentStart` and `SubagentStop` fire on
+the harness's own seams. `SessionStart` attaches context before the first turn —
+this bundle uses it (see `hooks/session-start.mjs`) to inject the
+`using-superpowers` body, so the entry skill is already in context instead of
+waiting to be asked for.
+
+The patch entry must use the `insert:` form; a `name`-only entry is silently
+skipped, because a non-insert patch needs an `id` to retarget an existing row.
+
 ## Windows notes
 
 - `pwsh` runs in ConstrainedLanguage under the read-only sandbox; commands
