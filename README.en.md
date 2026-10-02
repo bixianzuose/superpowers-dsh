@@ -240,6 +240,36 @@ bash needed) emitting `hookSpecificOutput.additionalContext`.
   Hermes, Muse) are not shipped here; this bundle carries only the DSH
   mapping, `references/dsh-tools.md`.
 
+## Weekly self-maintenance
+
+The repo carries its own maintenance loop, triggered weekly by a local scheduled
+task (or run by hand):
+
+- `scripts/check.mjs` — dependency-free self-check: skill tree integrity,
+  leftover namespace prefixes, merge markers, hook executability, package
+  manifest. Run it before and after any change; exit code 0 is the bar, and the
+  maintenance task uses it as its TDD entry point.
+- `.maintenance/weekly-task.md` — the maintenance handbook, the executing
+  agent's only source of truth: check → handle PRs/issues → fix bugs → align
+  with upstream → write a report.
+- `.maintenance/state.md` — the upstream alignment baseline (currently v6.4.2);
+  the task reads it to decide whether there is anything new.
+- `scripts/weekly-maintenance.ps1` — driver script: runs the handbook through
+  headless dsh; logs land in `.maintenance/logs/` (gitignored), reports in
+  `.maintenance/reports/`.
+- Scheduled task name: `superpowers-dsh-weekly-maintenance` (Sundays 03:00).
+
+Run it by hand:
+
+```powershell
+pwsh -File scripts/weekly-maintenance.ps1
+```
+
+Boundaries: the task works on branches and opens PRs only — it never pushes to
+main, never tags or publishes a release, and never adds a runtime dependency.
+Version bumps and releases stay a human decision; after merging a new upstream
+tag, update the baseline in `.maintenance/state.md`.
+
 ## Staying in sync with upstream
 
 This repo has three remotes: `origin` (this fork), `source` (LayneChai's port)

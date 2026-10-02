@@ -197,6 +197,27 @@ dsh plugin --profile <你的 profile> add @deepseek-ai/dsh-hooks-claude-code@0.2
 - 上游按 harness 分发的工具参考（Claude Code / Codex / Pi / Antigravity /
   Hermes / Muse）未随包分发，本包只带 DSH 映射 `references/dsh-tools.md`。
 
+## 每周自动维护
+
+本仓库自带一套自维护流程，每周由本机计划任务触发一次，也可以手动跑：
+
+- `scripts/check.mjs` —— 零依赖自检：技能树完整性、命名空间前缀残留、冲突标记、hook 可执行性、包清单。
+  改动前后都该跑，退出码 0 才算过（维护任务把它当作 TDD 的测试入口）。
+- `.maintenance/weekly-task.md` —— 维护手册，执行 agent 的唯一依据：体检 → 处理 PR/issue → 修 bug → 与上游对齐 → 出报告。
+- `.maintenance/state.md` —— 上游对齐基线（当前 v6.4.2），维护任务据此判断有没有增量。
+- `scripts/weekly-maintenance.ps1` —— 驱动脚本，用 headless dsh 跑维护手册；日志落 `.maintenance/logs/`（已 gitignore），
+  报告落 `.maintenance/reports/`。
+- 计划任务名：`superpowers-dsh-weekly-maintenance`（每周日 03:00）。
+
+手动跑一次：
+
+```powershell
+pwsh -File scripts/weekly-maintenance.ps1
+```
+
+边界：维护任务只在分支上动手并开 PR，**不 push main、不自动打 tag / 发 Release、不引入运行时依赖**；
+版本号与发布仍由人工决定。合并上游新 tag 后更新 `.maintenance/state.md` 的基线。
+
 ## 与上游同步
 
 本仓库已配置三个 remote：`origin`（本 fork）、`source`（LayneChai 的移植仓库）、
