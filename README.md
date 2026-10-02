@@ -158,6 +158,28 @@ dsh plugin --profile web remove superpowers-dsh
 - **零运行时依赖** —— 插件只使用 Node 内置模块，消费注入的 `ctx.skills`
   服务接口。
 
+## 让技能自动唤起（可选）
+
+上游在 Claude Code 上靠 `SessionStart` hook 把 `using-superpowers` 全文注入会话上下文；
+插件本身只注册技能目录，**默认不会自动唤起**（模型要先看到目录，再自己决定调 `skill`）。
+DSH 带 Claude Code hooks 桥，把下面这段加进 profile 的 `cordis.patch.yml` 就能拿到与上游一致的行为：
+
+```yaml
+- insert:
+    - id: hooks-claude-code
+      name: '@deepseek-ai/dsh-hooks-claude-code'
+      config:
+        configPath: <本包路径>/hooks/hooks.json
+        pluginRoot: <本包路径>
+```
+
+```sh
+dsh plugin --profile <你的 profile> add @deepseek-ai/dsh-hooks-claude-code@0.2.0-rc.2
+```
+
+两点注意：patch 条目必须写成 `insert:` 形式（非 insert 的条目要有 `id` 去改已有行，只有 `name` 会被跳过）；
+`hooks/session-start.mjs` 是 Node 实现（全平台可跑，不依赖 bash），输出 `hookSpecificOutput.additionalContext`。
+
 ## 移植说明（对比上游 obra/superpowers）
 
 - 去掉了命名空间前缀：`superpowers:brainstorming` → `brainstorming`

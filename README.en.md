@@ -193,6 +193,33 @@ dsh plugin --profile web remove superpowers-dsh
 - **Zero runtime dependencies** — the plugin imports only Node built-ins and
   consumes the injected `ctx.skills` service interface.
 
+## Auto-invocation (optional)
+
+Upstream uses a `SessionStart` hook on Claude Code to inject the full
+`using-superpowers` body into session context. This plugin only registers the
+skill catalog, so by default a session starts **without** that injection — the
+model has to see the catalog and choose to call `skill` itself. DSH ships a
+Claude Code hooks bridge, so adding this to your profile's `cordis.patch.yml`
+restores upstream behavior:
+
+```yaml
+- insert:
+    - id: hooks-claude-code
+      name: '@deepseek-ai/dsh-hooks-claude-code'
+      config:
+        configPath: <package path>/hooks/hooks.json
+        pluginRoot: <package path>
+```
+
+```sh
+dsh plugin --profile <your-profile> add @deepseek-ai/dsh-hooks-claude-code@0.2.0-rc.2
+```
+
+Two gotchas: the patch entry must use the `insert:` form (a non-insert entry
+needs an `id` to retarget an existing row, and a `name`-only entry is skipped);
+and `hooks/session-start.mjs` is a Node implementation (runs everywhere, no
+bash needed) emitting `hookSpecificOutput.additionalContext`.
+
 ## Porting notes (vs. upstream obra/superpowers)
 
 - Namespace prefixes removed: `superpowers:brainstorming` → `brainstorming`
