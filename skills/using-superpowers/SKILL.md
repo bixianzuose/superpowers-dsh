@@ -61,6 +61,9 @@ acting on a task that names or clearly matches that skill:
   `systematic-debugging`, `test-driven-development`, `using-git-worktrees`,
   `subagent-driven-development`, `dispatching-parallel-agents`, and the rest.
 - `using-superpowers` itself is discoverable the same way.
+- Tool mapping: `references/dsh-tools.md`. This port bundles only the
+  DeepSeek Harness reference; upstream's per-harness references (Claude
+  Code, Codex, Pi, Antigravity, Hermes, Muse) are not shipped here.
 
 ## User Instructions
 
