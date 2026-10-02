@@ -2,14 +2,6 @@
 
 Browser-based visual brainstorming companion for showing mockups, diagrams, and options.
 
-## Platform notes (DeepSeek Harness port)
-
-The companion server is `scripts/server.cjs` (plain Node.js, runs anywhere
-Node runs, including Windows). The `start-server.sh` / `stop-server.sh`
-helpers are bash-only: on Windows, start the server directly with
-`node scripts/server.cjs --project-dir <path> --open` and stop it by killing
-the process. All other guidance below is platform-neutral.
-
 ## When to Use
 
 Decide per-question, not per-session. The test: **would the user understand this better by seeing it than reading it?**
