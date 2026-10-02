@@ -3,10 +3,6 @@ name: using-superpowers
 description: Use when starting any conversation - establishes how to find and use skills, requiring skill invocation before ANY response including clarifying questions
 ---
 
-<SUBAGENT-STOP>
-If you were dispatched as a subagent to execute a specific task, ignore this skill.
-</SUBAGENT-STOP>
-
 <EXTREMELY-IMPORTANT>
 If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
 
@@ -27,8 +23,8 @@ Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it h
 
 When multiple skills apply, process skills come first — they set the approach, then implementation skills (frontend-design, etc.) carry it out. Brainstorming and systematic-debugging are Superpowers' most common process skills, but the rule holds for any of them.
 
-- "Let's build X" → superpowers:brainstorming first, then implementation skills.
-- "Fix this bug" → superpowers:systematic-debugging first, then domain skills.
+- "Let's build X" → brainstorming first, then implementation skills.
+- "Fix this bug" → systematic-debugging first, then domain skills.
 
 ## Red Flags
 
@@ -51,12 +47,20 @@ These thoughts mean STOP—you're rationalizing:
 
 ## Platform Adaptation
 
-If your harness appears here, read its reference file for special instructions:
+This is the DeepSeek Harness port. Read `references/dsh-tools.md` for the
+tool mapping and DSH-specific mechanisms (the `skill` tool, `subagent`,
+`workflow`, `goal` tools, and Windows `pwsh` notes).
 
-- Codex: `references/codex-tools.md`
-- Pi: `references/pi-tools.md`
-- Antigravity: `references/antigravity-tools.md`
-- Hermes Agent: `references/hermes-tools.md`
+## Invoking skills on DSH
+
+Call the `skill` tool with the exact skill name from the catalog before
+acting on a task that names or clearly matches that skill:
+
+- Load applicable skills FIRST, then follow their full instructions.
+- Skills are addressable by bare name: `brainstorming`, `writing-plans`,
+  `systematic-debugging`, `test-driven-development`, `using-git-worktrees`,
+  `subagent-driven-development`, `dispatching-parallel-agents`, and the rest.
+- `using-superpowers` itself is discoverable the same way.
 
 ## User Instructions
 
