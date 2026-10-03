@@ -49,52 +49,58 @@ $env:GCM_INTERACTIVE = 'never'
 # upstream（obra/superpowers），而 gh 没有默认仓库时会自己挑一个 —— 实测会挑中上游，
 # 于是把上游的几十个 PR 当成「本仓库的外部信号」。没有 gh（或未登录）不致命，
 # 但必须留下痕迹，让第 2 步知道自己是在哪个仓库上操作。
-$gh = Get-Command gh -ErrorAction SilentlyContinue
-if ($gh) {
-  $prevGhPref = $ErrorActionPreference
+# gh repo set-default 写的是「当前 checkout 的本地配置」，所以必须先站到 $Repo 里再设，
+# 否则计划任务从别的目录拉起时，设置落在错误的仓库上（甚至不在任何 git 仓库里）。
+Push-Location $Repo
+try {
+  $gh = Get-Command gh -ErrorAction SilentlyContinue
+  if ($gh) {
+    $prevGhPref = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+      & $gh.Source repo set-default $GitHubRepo 2>&1 | Out-Null
+      # 失败时 gh 会把整段 NativeCommandError 渲染塞进输出，压成一行再入日志
+      $resolved = ((& $gh.Source repo set-default --view 2>&1 | Out-String) -replace '\s+', ' ').Trim()
+      if ($LASTEXITCODE -eq 0 -and $resolved -eq $GitHubRepo) {
+        Log ("gh default repo = " + $resolved + " (PR/issue 列表即本仓库)")
+      } else {
+        Log ("gh default repo 设置失败：期望 " + $GitHubRepo + '，实得 "' + $resolved + '"；第 2 步请显式加 -R ' + $GitHubRepo)
+      }
+    } catch {
+      Log ("gh repo set-default exception: " + $_.Exception.Message)
+    } finally {
+      $ErrorActionPreference = $prevGhPref
+    }
+  } else {
+    Log 'gh not found; 第 2 步无法自动取 PR/issue 列表，将跳过并记录'
+  }
+
+  if ($DryRun) {
+    Log 'DRY RUN: not invoking dsh'
+    Log ("would run: " + $npx + " -y @deepseek-ai/dsh " + $Profile + " <prompt>")
+    Log ("cwd=" + (Get-Location).Path)
+    Log 'DRY RUN ok (exit 0)'
+    exit 0
+  }
+
+  $code = 1
+  # dsh 的诊断输出走 stderr；5.1 在 Stop 语义下会把 stderr 当终止错误，这里必须放开
+  $callPreference = $ErrorActionPreference
   $ErrorActionPreference = 'Continue'
   try {
-    & $gh.Source repo set-default $GitHubRepo 2>&1 | Out-Null
-    $resolved = (& $gh.Source repo set-default --view 2>&1 | Out-String).Trim()
-    if ($LASTEXITCODE -eq 0 -and $resolved -eq $GitHubRepo) {
-      Log ("gh default repo = " + $resolved + " (PR/issue 列表即本仓库)")
-    } else {
-      Log ("gh default repo 设置失败：期望 " + $GitHubRepo + '，实得 "' + $resolved + '"；第 2 步请显式加 -R ' + $GitHubRepo)
-    }
+    Log 'launching headless dsh ...'
+    & $npx -y '@deepseek-ai/dsh' $Profile $prompt 2>&1 | Tee-Object -FilePath $log -Append
+    $code = $LASTEXITCODE
+    if ($null -eq $code) { $code = 0 }
+    Log ("dsh exit code " + $code)
   } catch {
-    Log ("gh repo set-default exception: " + $_.Exception.Message)
+    Log ("exception: " + $_.Exception.Message)
+    $code = 1
   } finally {
-    $ErrorActionPreference = $prevGhPref
+    $ErrorActionPreference = $callPreference
+    Log ("=== weekly-maintenance end exit=" + $code + " ===")
   }
-} else {
-  Log 'gh not found; 第 2 步无法自动取 PR/issue 列表，将跳过并记录'
-}
-
-if ($DryRun) {
-  Log 'DRY RUN: not invoking dsh'
-  Log ("would run: " + $npx + " -y @deepseek-ai/dsh " + $Profile + " <prompt>")
-  Log ("cwd=" + $Repo)
-  Log 'DRY RUN ok (exit 0)'
-  exit 0
-}
-
-Push-Location $Repo
-$code = 1
-# dsh 的诊断输出走 stderr；5.1 在 Stop 语义下会把 stderr 当终止错误，这里必须放开
-$callPreference = $ErrorActionPreference
-$ErrorActionPreference = 'Continue'
-try {
-  Log 'launching headless dsh ...'
-  & $npx -y '@deepseek-ai/dsh' $Profile $prompt 2>&1 | Tee-Object -FilePath $log -Append
-  $code = $LASTEXITCODE
-  if ($null -eq $code) { $code = 0 }
-  Log ("dsh exit code " + $code)
-} catch {
-  Log ("exception: " + $_.Exception.Message)
-  $code = 1
 } finally {
-  $ErrorActionPreference = $callPreference
   Pop-Location
-  Log ("=== weekly-maintenance end exit=" + $code + " ===")
 }
 exit $code

@@ -106,8 +106,8 @@ dsh plugin --profile web add https://github.com/bixianzuose/superpowers-dsh.git
 ### Install from a tarball or a local folder
 
 ```sh
-# tarball (e.g. the repo-root asset superpowers-dsh-0.2.0.tgz)
-dsh plugin --profile web add C:\path\to\superpowers-dsh-0.2.0.tgz
+# tarball (e.g. the repo-root asset superpowers-dsh-0.2.1.tgz)
+dsh plugin --profile web add C:\path\to\superpowers-dsh-0.2.1.tgz
 
 # or the unpacked package folder (pnpm links it, so edits take effect on restart)
 dsh plugin --profile web add C:\path\to\superpowers-dsh
@@ -160,6 +160,7 @@ dsh plugin --profile web remove superpowers-dsh
 
 | This plugin | Skills baseline (upstream obra/superpowers) | DSH it targets | Notes |
 | --- | --- | --- | --- |
+| **0.2.1** (this repo, tag pending) | v6.4.2 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | Fixes `list()` reading whole skill bodies at startup; restores the accidentally dropped `writing-skills/examples/CLAUDE_MD_TESTING.md` |
 | **0.2.0** (this repo, GitHub install) | v6.4.2 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | 15 skills + a `SessionStart` hook for auto-invocation via `dsh-hooks-claude-code` |
 | 0.1.0 (npm `superpowers-dsh`, published by LayneChai) | v6.3.0 | early DSH | no hook, fewer skills; the npm package is **not** in sync with this fork |
 

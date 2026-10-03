@@ -77,8 +77,8 @@ dsh plugin --profile web add https://github.com/bixianzuose/superpowers-dsh.git
 ### 从 tarball 或本地文件夹安装
 
 ```sh
-# tarball（例如仓库根目录的 superpowers-dsh-0.2.0.tgz）
-dsh plugin --profile web add C:\路径\to\superpowers-dsh-0.2.0.tgz
+# tarball（例如仓库根目录的 superpowers-dsh-0.2.1.tgz）
+dsh plugin --profile web add C:\路径\to\superpowers-dsh-0.2.1.tgz
 
 # 或解压后的插件文件夹（pnpm 以链接方式安装，改完重启即生效）
 dsh plugin --profile web add C:\路径\to\superpowers-dsh
@@ -128,6 +128,7 @@ dsh plugin --profile web remove superpowers-dsh
 
 | 本插件 | 技能基线（上游 obra/superpowers） | 面向的 DSH | 说明 |
 | --- | --- | --- | --- |
+| **0.2.1**（本仓库，即将打 tag） | v6.4.2 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 修 `list()` 启动期读取整份技能正文；补回被误删的 `writing-skills/examples/CLAUDE_MD_TESTING.md` |
 | **0.2.0**（本仓库，GitHub 安装） | v6.4.2 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 15 个技能 + `SessionStart` hook，可用 `dsh-hooks-claude-code` 桥接自动唤起 |
 | 0.1.0（npm 上的 `superpowers-dsh`，LayneChai 发布） | v6.3.0 | 早期 DSH | 无 hook、技能数较少；npm 包与本 fork **不同步** |
 
