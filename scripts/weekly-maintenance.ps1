@@ -25,7 +25,8 @@ $log = Join-Path $logDir "$stamp.log"
 # 日志先行：任何早期失败都要留下痕迹
 "=== weekly-maintenance start $(Get-Date -Format o) ===" | Set-Content -Path $log -Encoding UTF8
 function Log([string]$m) {
-  ("[" + (Get-Date -Format 'HH:mm:ss') + "] " + $m) | Add-Content -Path $log
+  # 统一 UTF-8：5.1 的 Add-Content 默认 ANSI、Tee-Object 默认 UTF-16，混写会产生乱码
+  ("[" + (Get-Date -Format 'HH:mm:ss') + "] " + $m) | Add-Content -Path $log -Encoding UTF8
   Write-Host $m
 }
 Log ("profile=" + $Profile + " dryRun=" + $DryRun + " probe=" + $Probe + " repo=" + $Repo)
@@ -89,7 +90,7 @@ try {
   $ErrorActionPreference = 'Continue'
   try {
     Log 'launching headless dsh ...'
-    & $npx -y '@deepseek-ai/dsh' $Profile $prompt 2>&1 | Tee-Object -FilePath $log -Append
+    & $npx -y '@deepseek-ai/dsh' $Profile $prompt 2>&1 | Out-File -FilePath $log -Append -Encoding utf8
     $code = $LASTEXITCODE
     if ($null -eq $code) { $code = 0 }
     Log ("dsh exit code " + $code)
