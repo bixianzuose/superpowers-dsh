@@ -11,6 +11,7 @@
 param(
   [string]$Profile = 'spdsh-maint',
   [string]$Repo = 'D:\shuju\superpowers-dsh',
+  [string]$GitHubRepo = 'bixianzuose/superpowers-dsh',
   [switch]$DryRun,
   [switch]$Probe
 )
@@ -43,6 +44,31 @@ if ($Probe) { $prompt = '只回复两个字：链路' }
 # 无人值守：凭据不可用时要快速失败，绝不弹交互窗口挂住
 $env:GIT_TERMINAL_PROMPT = '0'
 $env:GCM_INTERACTIVE = 'never'
+
+# 第 2 步用 gh（pr list / pr diff / pr merge）判 PR。本 checkout 同时挂了 origin 与
+# upstream（obra/superpowers），而 gh 没有默认仓库时会自己挑一个 —— 实测会挑中上游，
+# 于是把上游的几十个 PR 当成「本仓库的外部信号」。没有 gh（或未登录）不致命，
+# 但必须留下痕迹，让第 2 步知道自己是在哪个仓库上操作。
+$gh = Get-Command gh -ErrorAction SilentlyContinue
+if ($gh) {
+  $prevGhPref = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    & $gh.Source repo set-default $GitHubRepo 2>&1 | Out-Null
+    $resolved = (& $gh.Source repo set-default --view 2>&1 | Out-String).Trim()
+    if ($LASTEXITCODE -eq 0 -and $resolved -eq $GitHubRepo) {
+      Log ("gh default repo = " + $resolved + " (PR/issue 列表即本仓库)")
+    } else {
+      Log ("gh default repo 设置失败：期望 " + $GitHubRepo + '，实得 "' + $resolved + '"；第 2 步请显式加 -R ' + $GitHubRepo)
+    }
+  } catch {
+    Log ("gh repo set-default exception: " + $_.Exception.Message)
+  } finally {
+    $ErrorActionPreference = $prevGhPref
+  }
+} else {
+  Log 'gh not found; 第 2 步无法自动取 PR/issue 列表，将跳过并记录'
+}
 
 if ($DryRun) {
   Log 'DRY RUN: not invoking dsh'
