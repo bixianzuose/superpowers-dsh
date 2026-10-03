@@ -124,6 +124,29 @@ dsh plugin --profile web remove superpowers-dsh
   下次重启 profile 生效
 - 使用者**不需要 npm 账号，也不需要 2FA**——安装只是普通的包下载
 
+## 版本与兼容性
+
+| 本插件 | 技能基线（上游 obra/superpowers） | 面向的 DSH | 说明 |
+| --- | --- | --- | --- |
+| **0.2.0**（本仓库，GitHub 安装） | v6.4.2 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 15 个技能 + `SessionStart` hook，可用 `dsh-hooks-claude-code` 桥接自动唤起 |
+| 0.1.0（npm 上的 `superpowers-dsh`，LayneChai 发布） | v6.3.0 | 早期 DSH | 无 hook、技能数较少；npm 包与本 fork **不同步** |
+
+已知限制与现状（对应仓库 issue）：
+
+- **旧会话看不到新技能**：技能提供者在 **profile 启动时**注册。插件是在会话进行中安装的，则该会话的技能目录已定，需要**重启 profile 并新开一个会话**才能看到（报告 issue #5）。
+- **DSH Desktop 启动超时（issue #3）**：报告者用的是 0.1.0，且 30 秒超时是渲染进程未上报启动健康，本仓库无法在本地复现多插件组合下的该现象。可在自己的机器上先做两步定性：
+  1. `dsh --profile web --dump-config` 确认只加载了预期插件；
+  2. 用本仓库的 `scripts/check.mjs` 与本包的 `test/provider.test.mjs` 验证提供者本身正常（见下）。
+  启动期开销已实测：`list()` 只读每个技能 frontmatter 区域（≤16 KB/技能），不会把技能正文读进内存。
+- **版本支持信息**：本仓库跟随上游技能基线，DSH 侧只依赖 `ctx.skills` 的提供者协议（`registerProvider` / `list` / `get`），不锁定 DSH 具体版本；若 `dsh --profile <p> --dump-config` 里能看到 `superpowers-dsh` 行，说明层已组合。
+
+自检（零依赖，改完任何东西都建议跑一遍）：
+
+```sh
+node scripts/check.mjs        # 技能树 + 移植不变量 + hook + 包清单 + 提供者契约
+node test/provider.test.mjs   # 单独跑提供者契约回归测试
+```
+
 ## 技能列表
 
 | 技能 | 用途 |
@@ -201,8 +224,9 @@ dsh plugin --profile <你的 profile> add @deepseek-ai/dsh-hooks-claude-code@0.2
 
 本仓库自带一套自维护流程，每周由本机计划任务触发一次，也可以手动跑：
 
-- `scripts/check.mjs` —— 零依赖自检：技能树完整性、命名空间前缀残留、冲突标记、hook 可执行性、包清单。
+- `scripts/check.mjs` —— 零依赖自检：技能树完整性、命名空间前缀残留、冲突标记、hook 可执行性、包清单、提供者契约回归测试。
   改动前后都该跑，退出码 0 才算过（维护任务把它当作 TDD 的测试入口）。
+- `test/provider.test.mjs` —— 提供者契约回归测试（`node:test`，无依赖）：`list()` 必须按 frontmatter 大小计费而不是技能正文大小，`get()` 必须返回完整正文与目录资源基。
 - `.maintenance/weekly-task.md` —— 维护手册，执行 agent 的唯一依据：体检 → 处理 PR/issue → 修 bug → 与上游对齐 → 出报告。
 - `.maintenance/state.md` —— 上游对齐基线（当前 v6.4.2），维护任务据此判断有没有增量。
 - `scripts/weekly-maintenance.ps1` —— 驱动脚本，用 headless dsh 跑维护手册；日志落 `.maintenance/logs/`（已 gitignore），

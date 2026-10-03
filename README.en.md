@@ -156,6 +156,41 @@ dsh plugin --profile web remove superpowers-dsh
 - Consumers need **no npm account and no 2FA** — installing is a plain
   package download.
 
+## Versions and compatibility
+
+| This plugin | Skills baseline (upstream obra/superpowers) | DSH it targets | Notes |
+| --- | --- | --- | --- |
+| **0.2.0** (this repo, GitHub install) | v6.4.2 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | 15 skills + a `SessionStart` hook for auto-invocation via `dsh-hooks-claude-code` |
+| 0.1.0 (npm `superpowers-dsh`, published by LayneChai) | v6.3.0 | early DSH | no hook, fewer skills; the npm package is **not** in sync with this fork |
+
+Known limits, as reported (see the repo issues):
+
+- **An already-open session does not pick up the new skills**: the skill
+  provider registers at **profile boot**. If you install the plugin mid-session,
+  that session's skill catalog is already fixed — restart the profile and open
+  a new session (reported as issue #5).
+- **DSH Desktop boot timeout (issue #3)**: the reporter was on 0.1.0, and the
+  30 s timeout is the renderer failing to report boot health. This repo cannot
+  reproduce that multi-plugin composition locally. Two local checks:
+  1. `dsh --profile web --dump-config` to confirm only the plugins you expect
+     are composed;
+  2. run this repo's `scripts/check.mjs` and `test/provider.test.mjs` to prove
+     the provider itself is healthy.
+  Measured boot cost: `list()` reads only each skill's frontmatter region
+  (≤16 KB per skill) and never pulls skill bodies into memory.
+- **Version support statement**: this repo tracks the upstream skills baseline;
+  on the DSH side it depends only on the `ctx.skills` provider protocol
+  (`registerProvider` / `list` / `get`) and pins no specific DSH version. If
+  `dsh --profile <p> --dump-config` lists a `superpowers-dsh` row, the layer is
+  composed.
+
+Self-check (zero dependencies — run it after any change):
+
+```sh
+node scripts/check.mjs        # skills tree + porting invariants + hook + manifest + provider contract
+node test/provider.test.mjs   # the provider contract regression test on its own
+```
+
 ## Skills
 
 | Skill | Purpose |
@@ -247,8 +282,12 @@ task (or run by hand):
 
 - `scripts/check.mjs` — dependency-free self-check: skill tree integrity,
   leftover namespace prefixes, merge markers, hook executability, package
-  manifest. Run it before and after any change; exit code 0 is the bar, and the
-  maintenance task uses it as its TDD entry point.
+  manifest, provider contract regression test. Run it before and after any
+  change; exit code 0 is the bar, and the maintenance task uses it as its TDD
+  entry point.
+- `test/provider.test.mjs` — provider contract regression test (`node:test`, no
+  dependencies): `list()` must cost frontmatter bytes rather than skill-body
+  bytes, and `get()` must return the full body plus a directory resource base.
 - `.maintenance/weekly-task.md` — the maintenance handbook, the executing
   agent's only source of truth: check → handle PRs/issues → fix bugs → align
   with upstream → write a report.
