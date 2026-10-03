@@ -86,6 +86,32 @@ if (!/^\d+\.\d+\.\d+$/.test(pkg.version ?? '')) bad(`package.json version 不是
 if (!pkg.dsh?.bundle?.patch) bad('package.json 缺 dsh.bundle.patch（不会成为 profile 层）')
 ok(`包清单：${pkg.name}@${pkg.version}`)
 
+// ---- 5. 提供者契约（回归测试）----
+// list() 的发现过程必须按 frontmatter 大小计费，而不是按技能正文大小；
+// 这是 profile 启动成本与 issue #3（renderer 启动超时）直接相关的回归面。
+const testFile = join(root, 'test', 'provider.test.mjs')
+if (!existsSync(testFile)) bad('test/provider.test.mjs 缺失（提供者契约回归测试）')
+else {
+  try {
+    const out = execFileSync(process.execPath, [testFile], {
+      encoding: 'utf8',
+      timeout: 120000,
+      env: { ...process.env, NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --no-warnings`.trim() }
+    })
+    const passLine = /^# pass (\d+)$/m.exec(out)?.[1]
+    const failLine = /^# fail (\d+)$/m.exec(out)?.[1]
+    if (failLine !== undefined && failLine !== '0') bad(`提供者契约测试失败 ${failLine} 项（见 node ${testFile} 输出）`)
+    else ok(`提供者契约：list() 有界读取 + get() 正文完整${passLine ? `（${passLine} 项断言）` : ''}`)
+  } catch (e) {
+    const detail = `${e.stdout ?? ''}${e.stderr ?? ''}`
+      .split('\n')
+      .map((line) => (line.length > 160 ? `${line.slice(0, 160)}…` : line))
+      .slice(-6)
+      .join(' | ')
+    bad(`提供者契约测试未通过: ${detail || e.message}`)
+  }
+}
+
 // ---- 输出 ----
 for (const p of passes) console.log(`PASS  ${p}`)
 for (const f of failures) console.log(`FAIL  ${f}`)
