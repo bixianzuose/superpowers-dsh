@@ -86,6 +86,18 @@ if (!/^\d+\.\d+\.\d+$/.test(pkg.version ?? '')) bad(`package.json version 不是
 if (!pkg.dsh?.bundle?.patch) bad('package.json 缺 dsh.bundle.patch（不会成为 profile 层）')
 ok(`包清单：${pkg.name}@${pkg.version}`)
 
+// ---- 4b. 版本一致性 ----
+// state.md 记录的"本仓库发布版本"是人手维护的；它与 package.json 一旦脱钩就会静默漂移
+// （2026-10-04 实测：发布 v0.2.1 后 state.md 仍停在 0.2.0）。纯文本比对，不依赖 git/网络。
+const stateFile = join(root, '.maintenance', 'state.md')
+if (!existsSync(stateFile)) bad('.maintenance/state.md 缺失')
+else {
+  const released = /本仓库发布版本：\*\*v?([\d.]+)\*\*/.exec(readFileSync(stateFile, 'utf8'))?.[1]
+  if (!released) bad('state.md 缺「本仓库发布版本」记录')
+  else if (released !== pkg.version) bad(`state.md 发布版本 v${released} 与 package.json ${pkg.version} 不一致（发布后未同步基线）`)
+  else ok(`版本一致：state.md 与 package.json 均为 ${pkg.version}`)
+}
+
 // ---- 5. 提供者契约（回归测试）----
 // list() 的发现过程必须按 frontmatter 大小计费，而不是按技能正文大小；
 // 这是 profile 启动成本与 issue #3（renderer 启动超时）直接相关的回归面。
