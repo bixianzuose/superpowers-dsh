@@ -3,6 +3,8 @@
 你是本仓库的维护 agent。本周要做的事只有三件：**修 bug、处理外来的 PR/issue、与上游对齐**。
 本文件是唯一执行依据，每次运行都从第 1 步完整走到第 7 步，不要跳步，不要凭记忆。
 
+整套维护按 **superpowers 工作流**执行：需要设计先 `brainstorming`、多步改动先 `writing-plans`、改代码用 `test-driven-development`（先让断言失败再改）、开 PR 前 `requesting-code-review` 自审、收尾用 `verification-before-completion`（贴出命令与输出再声明完成）；遇到 bug 先走 `systematic-debugging`（先复现再改）。
+
 会话起始应当已经注入了 `using-superpowers`（SessionStart hook）。若没有，先 `skill(name: "using-superpowers")`。
 工具：`pwsh` / `read` / `write` / `edit` / `grep` / `glob` / `subagent` 已在 DSH 上可用。
 
@@ -57,13 +59,26 @@ git log --oneline v6.4.2..<最新 tag> -- skills
 
 ## 5. 版本与发布
 
-`package.json` 的版本号与 GitHub Release **不要自动发布**，除非：
+触发条件：本周发生了**上游对齐**（技能内容变化）或修了**影响使用的 bug**，且 `node scripts/check.mjs` 全绿。
 
-- 本周发生了上游对齐（技能内容变化）或修了影响使用的 bug；
-- 且 `check.mjs` 全绿。
+1. 升 `package.json` 版本号：技能基线上大版本走 minor 位，纯修复走 patch 位。
+2. `npm pack` 出新版本 tarball，并**删除仓库里除最新版以外的所有 `superpowers-dsh-*.tgz`**——仓库只保留当前版本一份。
+3. 同步 README 双语（技能基线、版本兼容表、tarball 名）与 `.maintenance/state.md`（基线 tag、发布版本、变更记录）。
+4. 走分支 + PR，PR 描述里写明将要发布的版本号。
+5. **合并后必须打 tag 并发布 Release**，让它出现在 Releases 列表里：
 
-此时才：改版本号 → 重新 `npm pack` 覆盖 tarball → 在分支里提交 → PR 描述里写明要打什么 tag。
-打 tag、发 Release、改 profile 依赖一律留给人工确认。
+   ```sh
+   git tag -a vX.Y.Z -m "superpowers-dsh X.Y.Z"
+   git push origin vX.Y.Z
+   gh release create vX.Y.Z --repo bixianzuose/superpowers-dsh \
+     --title "vX.Y.Z — <一句话>" --notes-file <notes> "superpowers-dsh-X.Y.Z.tgz"
+   ```
+
+   前提：`package.json` 版本 == tag，且 check 全绿。
+6. 发布后把相关 profile 的依赖指到新 tag：
+   `dsh plugin --profile <p> add github:bixianzuose/superpowers-dsh#vX.Y.Z`
+
+**没有版本更新的一周**：不改版本号、不打 tag、不发包。
 
 ## 6. 产出（每次必做）
 
@@ -98,7 +113,7 @@ git log --oneline v6.4.2..<最新 tag> -- skills
 - **不直接 push main**；一切改动走分支 + PR。
 - 不 force push、不删分支、不 rewrite 历史。
 - 不改 `skills/` 内技能正文的语义（那是上游内容）；只做移植适配与仓库维护。
-- 不自动升版本号、不自动打 tag、不自动发 Release（见第 5 步）。
+- 版本更新周必须走完第 5 步：升版本号 → 打包 → **只留最新 tarball** → 合并后**打 tag + 发 Release**（附件带该版本 tgz）。打了 tag 就必须发 Release，不许只打 tag 不留痕。
 - 不引入 npm 运行时依赖（本插件必须保持零依赖）。
 - 凭据、token、`.env` 内容不得进入报告、提交或 PR 描述。
 

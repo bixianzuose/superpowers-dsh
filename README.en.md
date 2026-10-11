@@ -17,7 +17,7 @@ skills of [obra/superpowers](https://github.com/obra/superpowers) (the
 Claude-Code skills library: TDD, debugging, planning, collaboration patterns)
 to DSH's Cordis plugin architecture.
 
-This repo is a fork of [LayneChai/superpowers-dsh](https://github.com/LayneChai/superpowers-dsh): the skills are synced to upstream **obra/superpowers v6.4.2** (which added `diagnosing-superpowers`), with every DSH adaptation preserved.
+This repo is a fork of [LayneChai/superpowers-dsh](https://github.com/LayneChai/superpowers-dsh): the skills are synced to upstream **obra/superpowers v7.0.0** (rebuilt `brainstorming`, Windows hook fixes), with every DSH adaptation preserved.
 
 The plugin registers a skill provider into the **host layer** of the
 `ctx.skills` registry, so every agent preset's scope chain merges these
@@ -106,8 +106,8 @@ dsh plugin --profile web add https://github.com/bixianzuose/superpowers-dsh.git
 ### Install from a tarball or a local folder
 
 ```sh
-# tarball (e.g. the repo-root asset superpowers-dsh-0.2.1.tgz)
-dsh plugin --profile web add C:\path\to\superpowers-dsh-0.2.1.tgz
+# tarball (e.g. the repo-root asset superpowers-dsh-0.3.0.tgz)
+dsh plugin --profile web add C:\path\to\superpowers-dsh-0.3.0.tgz
 
 # or the unpacked package folder (pnpm links it, so edits take effect on restart)
 dsh plugin --profile web add C:\path\to\superpowers-dsh
@@ -160,7 +160,8 @@ dsh plugin --profile web remove superpowers-dsh
 
 | This plugin | Skills baseline (upstream obra/superpowers) | DSH it targets | Notes |
 | --- | --- | --- | --- |
-| **0.2.1** (this repo, tag pending) | v6.4.2 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | Fixes `list()` reading whole skill bodies at startup; restores the accidentally dropped `writing-skills/examples/CLAUDE_MD_TESTING.md` |
+| **0.3.0** (this repo, release pending) | v7.0.0 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | Aligns with upstream v7.0.0 (rebuilt rainstorming); restores exec bits lost on 6 scripts |
+| **0.2.1** (this repo, released) | v6.4.2 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | Fixes `list()` reading whole skill bodies at startup; restores the accidentally dropped `writing-skills/examples/CLAUDE_MD_TESTING.md` |
 | **0.2.0** (this repo, GitHub install) | v6.4.2 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | 15 skills + a `SessionStart` hook for auto-invocation via `dsh-hooks-claude-code` |
 | 0.1.0 (npm `superpowers-dsh`, published by LayneChai) | v6.3.0 | early DSH | no hook, fewer skills; the npm package is **not** in sync with this fork |
 
@@ -198,7 +199,7 @@ node test/provider.test.mjs   # the provider contract regression test on its own
 | --- | --- |
 | `using-superpowers` | How to find and use skills; the entry-point skill |
 | `diagnosing-superpowers` | Diagnose why a session went wrong (repeated work, ignored plans, time/time-cost surprises) and build a report for the maintainers |
-| `brainstorming` | Turn ideas into designs through collaborative dialogue |
+| `brainstorming` | Turn ideas into designs through collaborative dialogue; new projects and new plans go through it first |
 | `writing-plans` | Write comprehensive implementation plans from specs |
 | `executing-plans` | Execute the plan yourself in this session (native execution: task ledger + one whole-branch review at the end) |
 | `subagent-driven-development` | Dispatch fresh subagents per task with reviews |
@@ -266,10 +267,11 @@ bash needed) emitting `hookSpecificOutput.additionalContext`.
 - Subagent references map to DSH's `subagent` / `subagent_fork` tools.
 - `brainstorming`'s visual companion adds a Windows note: the Node server
   (`scripts/server.cjs`) runs everywhere; the `.sh` helpers are bash-only.
-- **Skills baseline: obra/superpowers v6.4.2.** Upstream rewrote
+- **Skills baseline: obra/superpowers v7.0.0.** The previous baseline (v6.4.2) rewrote
   `executing-plans` as native execution (task ledger, `task-start` /
   `task-done` scripts, one whole-branch review at the end) and added
-  `diagnosing-superpowers`; this package re-applied every DSH adaptation on
+  diagnosing-superpowers; this package re-applied every DSH adaptation on
+- v7.0.0 rebuilt `brainstorming` (routing by project type, added `builder-check-prompt.md`, dropped `spec-document-reviewer-prompt.md`) and fixed Windows hook invocation; this package replayed the DSH adaptations (4 prefix removals, exec bits back to upstream `100755`).
   top (bare skill names, `subagent` / `subagent_fork` wording, pointers to
   `dsh-tools.md`).
 - Upstream's per-harness tool references (Claude Code, Codex, Pi, Antigravity,
@@ -292,7 +294,7 @@ task (or run by hand):
 - `.maintenance/weekly-task.md` — the maintenance handbook, the executing
   agent's only source of truth: check → handle PRs/issues → fix bugs → align
   with upstream → write a report.
-- `.maintenance/state.md` — the upstream alignment baseline (currently v6.4.2);
+- `.maintenance/state.md` — the upstream alignment baseline (currently v7.0.0);
   the task reads it to decide whether there is anything new.
 - `scripts/weekly-maintenance.ps1` — driver script: runs the handbook through
   headless dsh; logs land in `.maintenance/logs/` (gitignored), reports in
@@ -317,7 +319,7 @@ and `upstream` (obra/superpowers). To move to a newer upstream release:
 
 ```sh
 git fetch upstream --tags
-git diff --stat v6.4.2 <new-tag> -- skills    # see the change surface first
+git diff --stat v7.0.0 <new-tag> -- skills    # see the change surface first
 ```
 
 Then take the new upstream tag as the base and re-apply the DSH adaptations:
