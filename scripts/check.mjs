@@ -87,17 +87,20 @@ if (!pkg.dsh?.bundle?.patch) bad('package.json 缺 dsh.bundle.patch（不会成�
 ok(`包清单：${pkg.name}@${pkg.version}`)
 
 // ---- 4b. 版本一致性 ----
-// state.md 记录的"本仓库发布版本"是人手维护的；它与 package.json 一旦脱钩就会静默漂移
-// （2026-10-04 实测：发布 v0.2.1 后 state.md 仍停在 0.2.0）。纯文本比对，不依赖 git/网络。
+// state.md 必须记录当前 package.json 的版本，并单独记录「已发布版本」。
+// 2026-10-11 修正：原断言要求「发布版本 == package.json.version」，在「版本已准备但未发布」的
+// 窗口期必然误报（package.json 已备到 0.3.0，而最近发布的是 0.2.1），故拆成两行分别校验。
 const stateFile = join(root, '.maintenance', 'state.md')
 if (!existsSync(stateFile)) bad('.maintenance/state.md 缺失')
 else {
-  const released = /本仓库发布版本：\*\*v?([\d.]+)\*\*/.exec(readFileSync(stateFile, 'utf8'))?.[1]
+  const stateText = readFileSync(stateFile, 'utf8')
+  const released = /本仓库发布版本：\*\*v?([\d.]+)\*\*/.exec(stateText)?.[1]
+  const inPkgJson = /`package\.json` 版本：\*\*v?([\d.]+)\*\*/.exec(stateText)?.[1]
   if (!released) bad('state.md 缺「本仓库发布版本」记录')
-  else if (released !== pkg.version) bad(`state.md 发布版本 v${released} 与 package.json ${pkg.version} 不一致（发布后未同步基线）`)
-  else ok(`版本一致：state.md 与 package.json 均为 ${pkg.version}`)
+  else if (!inPkgJson) bad('state.md 缺「package.json 版本」记录')
+  else if (inPkgJson !== pkg.version) bad(`state.md 记录的 package.json 版本 ${inPkgJson} 与实际 ${pkg.version} 不一致`)
+  else ok(`版本一致：package.json ${pkg.version}（已发布 v${released}）`)
 }
-
 // ---- 5. 提供者契约（回归测试）----
 // list() 的发现过程必须按 frontmatter 大小计费，而不是按技能正文大小；
 // 这是 profile 启动成本与 issue #3（renderer 启动超时）直接相关的回归面。
