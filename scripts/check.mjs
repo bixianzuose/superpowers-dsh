@@ -9,8 +9,10 @@ import { execFileSync } from 'node:child_process'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const failures = []
+const warnings = []
 const passes = []
 const bad = (m) => failures.push(m)
+const warn = (m) => warnings.push(m)
 const ok = (m) => passes.push(m)
 
 const TEXT_EXT = new Set(['.md', '.mjs', '.cjs', '.js', '.json', '.yml', '.yaml', '.sh', '.ts', '.html', '.dot', '.txt'])
@@ -108,6 +110,69 @@ if (tgzs.length === 0) bad('仓库缺少当前版本的 tarball（Release 附件
 else if (tgzs.length > 1) bad(`仓库内有 ${tgzs.length} 个 tarball，只应保留最新版：${tgzs.join(', ')}`)
 else if (!tgzs[0].includes(`-${pkg.version}.tgz`)) bad(`tarball ${tgzs[0]} 与 package.json 版本 ${pkg.version} 不一致`)
 else ok(`发布产物：${tgzs[0]}（仅此一份）`)
+// ---- 4d. 技能脚本可执行性 ----
+// 技能正文用 `bash scripts/<name>` 或裸路径调用这些 helper。Windows 上没有 shebang，
+// 且 PATH 里的 bash 可能是不含发行版的 WSL 桩，所以这里校验：能找到 Git Bash 就逐个做
+// 语法检查；找不到只告警（环境问题不该让自检判死，手册要靠退出码判断仓库健康状况）。
+function findBash() {
+  if (process.platform !== 'win32') return 'bash'
+  for (const c of ['C:\\Program Files\\Git\\bin\\bash.exe', 'C:\\Program Files\\Git\\usr\\bin\\bash.exe']) {
+    if (existsSync(c)) return c
+  }
+  return null
+}
+const bashHelpers = [
+  'skills/brainstorming/scripts/start-server.sh',
+  'skills/brainstorming/scripts/stop-server.sh',
+  'skills/executing-plans/scripts/task-start',
+  'skills/executing-plans/scripts/task-done',
+  'skills/subagent-driven-development/scripts/sdd-workspace',
+  'skills/subagent-driven-development/scripts/task-brief',
+  'skills/subagent-driven-development/scripts/review-package',
+  'skills/systematic-debugging/find-polluter.sh'
+]
+const bash = findBash()
+if (!bash) {
+  warn('未找到可用的 bash —— Windows 上技能脚本需要 Git Bash；技能正文里的 `bash scripts/x` 应改用 `sh scripts/x` 或 Git Bash 绝对路径')
+} else {
+  let broken = 0
+  for (const rel of bashHelpers) {
+    const file = join(root, ...rel.split('/'))
+    if (!existsSync(file)) { bad(`${rel} 缺失`); broken++; continue }
+    try {
+      execFileSync(bash, ['-n', file], { encoding: 'utf8', timeout: 20000 })
+    } catch (e) {
+      bad(`${rel} 语法检查失败: ${String(e.stderr || e.message).split('\n')[0]}`)
+      broken++
+    }
+  }
+  if (!broken) ok(`技能脚本：${bashHelpers.length} 个 bash helper 语法通过（${bash === 'bash' ? 'PATH 上的 bash' : 'Git Bash'}）`)
+}
+// ---- 4e. 文本整洁（不可见字符）----
+// 控制字符写进文件后 diff 里看不见，肉眼 review 抓不到：
+// 2026-10-11 实测——用 PowerShell 双引号字符串写 `` `brainstorming` `` 时，`` `b `` 被转义成退格符(0x08)，
+// README 里留下了 "rainstorming"。
+const textExts = new Set(['.md', '.mjs', '.js', '.cjs', '.json', '.yml', '.yaml', '.sh'])
+const strayControl = []
+const walkText = (dir) => {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === '.git' || entry.name === 'node_modules') continue
+    const full = join(dir, entry.name)
+    if (entry.isDirectory()) { walkText(full); continue }
+    if (!textExts.has(extname(entry.name))) continue
+    const buf = readFileSync(full)
+    for (let i = 0; i < buf.length; i++) {
+      const b = buf[i]
+      if (b < 0x09 || b === 0x0b || b === 0x0c || (b >= 0x0e && b < 0x20)) {
+        strayControl.push(`${full.slice(root.length + 1)} @${i} (0x${b.toString(16)})`)
+        break
+      }
+    }
+  }
+}
+walkText(root)
+if (strayControl.length) bad(`文本文件含控制字符：${strayControl.join('; ')}`)
+else ok('文本整洁：无控制字符（退格 / 响铃等）')
 // ---- 5. 提供者契约（回归测试）----
 // list() 的发现过程必须按 frontmatter 大小计费，而不是按技能正文大小；
 // 这是 profile 启动成本与 issue #3（renderer 启动超时）直接相关的回归面。
@@ -136,6 +201,7 @@ else {
 
 // ---- 输出 ----
 for (const p of passes) console.log(`PASS  ${p}`)
+for (const w of warnings) console.log(`WARN  ${w}`)
 for (const f of failures) console.log(`FAIL  ${f}`)
-console.log(`\n${passes.length} passed, ${failures.length} failed`)
+console.log(`\n${passes.length} passed, ${failures.length} failed${warnings.length ? `, ${warnings.length} warning(s)` : ''}`)
 process.exit(failures.length ? 1 : 0)

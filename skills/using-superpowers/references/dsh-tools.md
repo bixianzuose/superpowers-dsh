@@ -72,6 +72,42 @@ waiting to be asked for.
 The patch entry must use the `insert:` form; a `name`-only entry is silently
 skipped, because a non-insert patch needs an `id` to retarget an existing row.
 
+## Running skill scripts on Windows
+
+Skill bodies call their helpers as `bash scripts/<name> <args>`; the
+`executing-plans` / `subagent-driven-development` pair also calls bare paths
+like `scripts/task-start PLAN N`. On Windows **the invocation mechanism fails
+before the script does**:
+
+- `bash` in `PATH` can resolve to `C:\Windows\system32\bash.exe` — the WSL
+  launcher. With no WSL distro installed, every call dies with
+  `execvpe(/bin/bash) failed: No such file or directory`.
+- Bare-path invocation cannot work either: Windows has no shebang support.
+
+Use Git Bash. `sh` normally already resolves to it
+(`C:\Program Files\Git\bin\sh.exe`); otherwise call
+`"C:\Program Files\Git\bin\bash.exe" <script> <args>` directly. Translate:
+
+| Skill body says | Run on Windows |
+| --- | --- |
+| `bash scripts/start-server.sh …` | `sh scripts/start-server.sh …` |
+| `scripts/task-start PLAN N` | `sh scripts/task-start PLAN N` |
+| `scripts/task-done PLAN N BASE -- <cmd>` | `sh scripts/task-done PLAN N BASE -- <cmd>` |
+
+Verified (2026-10-11): all eight bundled bash helpers parse under Git Bash, and
+`task-start` / `task-done` complete end-to-end against a plan document — the
+ledger lands in `.superpowers/sdd/<PLAN>/`, and the scripts write their own
+`.gitignore` there so nothing leaks into the repo.
+
+Git Bash carries everything these scripts use (`git`, `sed`, `awk`, `grep`,
+`mktemp`, `timeout`, `sha1sum`, `python`, `node`) **except `jq`** — where a
+skill suggests a `jq` pipe, use `gh --jq` or a one-line `node -e` instead.
+
+Optional one-time fix (needs a DSH restart to take effect): put
+`C:\Program Files\Git\bin` ahead of `C:\Windows\system32` in the user `PATH` so
+bare `bash` resolves to Git Bash — do that only if you want skill bodies to run
+unmodified.
+
 ## Windows notes
 
 - `pwsh` runs in ConstrainedLanguage under the read-only sandbox; commands
