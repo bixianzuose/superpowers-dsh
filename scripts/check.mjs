@@ -101,6 +101,13 @@ else {
   else if (inPkgJson !== pkg.version) bad(`state.md 记录的 package.json 版本 ${inPkgJson} 与实际 ${pkg.version} 不一致`)
   else ok(`版本一致：package.json ${pkg.version}（已发布 v${released}）`)
 }
+// ---- 4c. 发布产物 ----
+// 仓库只保留当前版本的 tarball（发布走 GitHub Release 附件，历史包不该堆在 git 里）。
+const tgzs = readdirSync(root).filter((f) => /^superpowers-dsh-\d+\.\d+\.\d+\.tgz$/.test(f))
+if (tgzs.length === 0) bad('仓库缺少当前版本的 tarball（Release 附件需要它）')
+else if (tgzs.length > 1) bad(`仓库内有 ${tgzs.length} 个 tarball，只应保留最新版：${tgzs.join(', ')}`)
+else if (!tgzs[0].includes(`-${pkg.version}.tgz`)) bad(`tarball ${tgzs[0]} 与 package.json 版本 ${pkg.version} 不一致`)
+else ok(`发布产物：${tgzs[0]}（仅此一份）`)
 // ---- 5. 提供者契约（回归测试）----
 // list() 的发现过程必须按 frontmatter 大小计费，而不是按技能正文大小；
 // 这是 profile 启动成本与 issue #3（renderer 启动超时）直接相关的回归面。
