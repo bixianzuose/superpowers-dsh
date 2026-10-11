@@ -79,9 +79,13 @@ Skill bodies call their helpers as `bash scripts/<name> <args>`; the
 like `scripts/task-start PLAN N`. On Windows **the invocation mechanism fails
 before the script does**:
 
-- `bash` in `PATH` can resolve to `C:\Windows\system32\bash.exe` — the WSL
-  launcher. With no WSL distro installed, every call dies with
-  `execvpe(/bin/bash) failed: No such file or directory`.
+- `bash` in `PATH` usually resolves to `C:\Windows\system32\bash.exe` — the
+  Microsoft Bash Launcher, which targets the **default WSL distribution**. If
+  that default happens to be a distro without `/bin/bash` (Docker Desktop's
+  `docker-desktop` utility distro is one — it ships only `ash` and `sh`), every
+  call dies with `execvpe(/bin/bash) failed: No such file or directory`, even
+  though WSL itself is perfectly healthy (`wsl -e echo OK` succeeds). Check
+  `wsl -l -v` (the `*` marks the default) and `wsl --status`.
 - Bare-path invocation cannot work either: Windows has no shebang support.
 
 Use Git Bash. `sh` normally already resolves to it
@@ -103,10 +107,22 @@ Git Bash carries everything these scripts use (`git`, `sed`, `awk`, `grep`,
 `mktemp`, `timeout`, `sha1sum`, `python`, `node`) **except `jq`** — where a
 skill suggests a `jq` pipe, use `gh --jq` or a one-line `node -e` instead.
 
-Optional one-time fix (needs a DSH restart to take effect): put
-`C:\Program Files\Git\bin` ahead of `C:\Windows\system32` in the user `PATH` so
-bare `bash` resolves to Git Bash — do that only if you want skill bodies to run
-unmodified.
+If you want bare `bash` to work so skill bodies run unmodified, there are two
+ways. Neither is required — `sh` already works:
+
+1. **Put Git Bash first in `PATH`**: prepend `C:\Program Files\Git\bin` ahead
+   of `C:\Windows\system32` in the user `PATH` (needs a DSH restart). Git Bash
+   sees the same paths and the same `git` as the rest of Windows, which is what
+   these scripts expect.
+2. **Point WSL's default at a distro that has bash**: `wsl --set-default
+   Ubuntu`. Bare `bash` then works, but it runs inside the Linux view
+   (`/mnt/d/...`) — a different filesystem flavour from the Windows workspace
+   these scripts operate on, so expect path and line-ending friction. Don't
+   change someone's default distro without asking.
+
+Measured here (2026-10-11): default distro was `docker-desktop` (no `/bin/bash`),
+while `Ubuntu` 26.04 LTS was installed and could parse these helpers over
+`/mnt/d`.
 
 ## Windows notes
 
