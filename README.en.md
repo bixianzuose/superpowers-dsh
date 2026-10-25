@@ -17,7 +17,7 @@ skills of [obra/superpowers](https://github.com/obra/superpowers) (the
 Claude-Code skills library: TDD, debugging, planning, collaboration patterns)
 to DSH's Cordis plugin architecture.
 
-This repo is a fork of [LayneChai/superpowers-dsh](https://github.com/LayneChai/superpowers-dsh): the skills are synced to upstream **obra/superpowers v7.0.0** (rebuilt `brainstorming`, Windows hook fixes), with every DSH adaptation preserved.
+This repo is a fork of [LayneChai/superpowers-dsh](https://github.com/LayneChai/superpowers-dsh): the skills are synced to upstream **obra/superpowers v7.0.1** (rebuilt `brainstorming`, Windows hook fixes), with every DSH adaptation preserved.
 
 The plugin registers a skill provider into the **host layer** of the
 `ctx.skills` registry, so every agent preset's scope chain merges these
@@ -106,8 +106,8 @@ dsh plugin --profile web add https://github.com/bixianzuose/superpowers-dsh.git
 ### Install from a tarball or a local folder
 
 ```sh
-# tarball (e.g. the repo-root asset superpowers-dsh-0.3.2.tgz)
-dsh plugin --profile web add C:\path\to\superpowers-dsh-0.3.2.tgz
+# tarball (e.g. the repo-root asset superpowers-dsh-0.3.3.tgz)
+dsh plugin --profile web add C:\path\to\superpowers-dsh-0.3.3.tgz
 
 # or the unpacked package folder (pnpm links it, so edits take effect on restart)
 dsh plugin --profile web add C:\path\to\superpowers-dsh
@@ -160,7 +160,8 @@ dsh plugin --profile web remove superpowers-dsh
 
 | This plugin | Skills baseline (upstream obra/superpowers) | DSH it targets | Notes |
 | --- | --- | --- | --- |
-| **0.3.2** (this repo, release pending) | v7.0.0 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | Corrects the Windows `bash` failure explanation (the default WSL distro may be `docker-desktop`, which ships no bash) and adds the second fix |
+| **0.3.3** (this repo, release pending) | v7.0.1 | DSH >= 0.2.0-rc.2 (desktop builds included) | Aligns with upstream v7.0.1 (writing-skills and subagent-driven-development split into references/); fixes stale files and one cross-skill broken link |
+| **0.3.2** (this repo, released) | v7.0.0 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | Corrects the Windows `bash` failure explanation (the default WSL distro may be `docker-desktop`, which ships no bash) and adds the second fix |
 | **0.3.1** (this repo, released) | v7.0.0 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | Documents Windows skill-script invocation (`sh` / Git Bash; bare `bash` hits the WSL stub); self-check gains script and stray-control-character assertions |
 | **0.3.0** (this repo, released) | v7.0.0 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | Aligns with upstream v7.0.0 (rebuilt `brainstorming`); restores exec bits lost on 6 scripts |
 | **0.2.1** (this repo, released) | v6.4.2 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | Fixes `list()` reading whole skill bodies at startup; restores the accidentally dropped `writing-skills/examples/CLAUDE_MD_TESTING.md` |
@@ -269,7 +270,7 @@ bash needed) emitting `hookSpecificOutput.additionalContext`.
 - Subagent references map to DSH's `subagent` / `subagent_fork` tools.
 - `brainstorming`'s visual companion adds a Windows note: the Node server
   (`scripts/server.cjs`) runs everywhere; the `.sh` helpers are bash-only.
-- **Skills baseline: obra/superpowers v7.0.0.** The previous baseline (v6.4.2) rewrote
+- **Skills baseline: obra/superpowers v7.0.1.** This release splits writing-skills and subagent-driven-development into references/; the previous baseline (v6.4.2) rewrote
   `executing-plans` as native execution (task ledger, `task-start` /
   `task-done` scripts, one whole-branch review at the end) and added
   diagnosing-superpowers; this package re-applied every DSH adaptation on
