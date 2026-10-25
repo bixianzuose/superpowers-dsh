@@ -17,7 +17,7 @@
 （Claude-Code 技能库：TDD、调试、规划、协作模式）移植到 DSH 的 Cordis
 插件架构上。
 
-本仓库是 [LayneChai/superpowers-dsh](https://github.com/LayneChai/superpowers-dsh) 的 fork：技能内容已同步到上游 **obra/superpowers v7.0.0**（`brainstorming` 重建、Windows hook 修复），DSH 移植改动全部保留。
+本仓库是 [LayneChai/superpowers-dsh](https://github.com/LayneChai/superpowers-dsh) 的 fork：技能内容已同步到上游 **obra/superpowers v7.0.1**（`brainstorming` 重建、Windows hook 修复），DSH 移植改动全部保留。
 
 插件会向 `ctx.skills` 注册表的 **host 层** 注册一个技能提供者，因此每个
 agent preset 的作用域链都会合并这些技能。技能正文随包分发
@@ -77,8 +77,8 @@ dsh plugin --profile web add https://github.com/bixianzuose/superpowers-dsh.git
 ### 从 tarball 或本地文件夹安装
 
 ```sh
-# tarball（例如仓库根目录的 superpowers-dsh-0.3.2.tgz）
-dsh plugin --profile web add C:\路径\to\superpowers-dsh-0.3.2.tgz
+# tarball（例如仓库根目录的 superpowers-dsh-0.3.3.tgz）
+dsh plugin --profile web add C:\路径\to\superpowers-dsh-0.3.3.tgz
 
 # 或解压后的插件文件夹（pnpm 以链接方式安装，改完重启即生效）
 dsh plugin --profile web add C:\路径\to\superpowers-dsh
@@ -128,7 +128,8 @@ dsh plugin --profile web remove superpowers-dsh
 
 | 本插件 | 技能基线（上游 obra/superpowers） | 面向的 DSH | 说明 |
 | --- | --- | --- | --- |
-| **0.3.2**（本仓库，待发布） | v7.0.0 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 修正 Windows 上 `bash` 失败原因的说明（默认 WSL 发行版可能是没有 bash 的 `docker-desktop`），并补上第二种修法 |
+| **0.3.3**（本仓库，待发布） | v7.0.1 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 对齐上游 v7.0.1（writing-skills 与 subagent-driven-development 拆进 references/）；修复整体同步漏删的旧路径文件与一处跨技能断链 |
+| **0.3.2**（本仓库，已发布） | v7.0.0 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 修正 Windows 上 `bash` 失败原因的说明（默认 WSL 发行版可能是没有 bash 的 `docker-desktop`），并补上第二种修法 |
 | **0.3.1**（本仓库，已发布） | v7.0.0 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 补 Windows 技能脚本调用约定（裸 `bash` 会落到未装发行版的 WSL 桩，改用 `sh` / Git Bash）；自检新增「技能脚本」与「文本整洁」检查 |
 | **0.3.0**（本仓库，已发布） | v7.0.0 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 对齐上游 v7.0.0（`brainstorming` 重建）；修 6 个脚本丢失的可执行位 |
 | **0.2.1**（本仓库，已发布） | v6.4.2 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 修 `list()` 启动期读取整份技能正文；补回被误删的 `writing-skills/examples/CLAUDE_MD_TESTING.md` |
@@ -217,7 +218,7 @@ dsh plugin --profile <你的 profile> add @deepseek-ai/dsh-hooks-claude-code@0.2
 - 子代理引用映射到 DSH 的 `subagent` / `subagent_fork` 工具。
 - `brainstorming` 的视觉伴侣补充了 Windows 说明：Node 服务
   （`scripts/server.cjs`）全平台可跑；`.sh` 辅助脚本仅限 bash。
-- **技能基线：obra/superpowers v7.0.0。** 上一版（v6.4.2）把 `executing-plans`
+- **技能基线：obra/superpowers v7.0.1。** 这一版把 `writing-skills` 与 `subagent-driven-development` 的大文件拆进 `references/`；上一版（v6.4.2）把 `executing-plans`
   重写为"原生执行"（任务台账、`task-start` / `task-done` 脚本、收尾整体评审），
   并新增 `diagnosing-superpowers`；本包同步后重放了全部 DSH 适配（去前缀、
   subagent / subagent_fork 说明、指向 dsh-tools.md）。

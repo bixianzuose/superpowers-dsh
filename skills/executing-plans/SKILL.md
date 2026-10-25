@@ -21,6 +21,27 @@ the final reviewer is the second pair of eyes.
 prove each step with a test you watched fail and then pass, and leave a
 record that survives your own forgetting.
 
+**Narration:** between tool calls, narrate at most one short line — the
+ledger and the tool results carry the record.
+
+**Continuous execution:** Do not pause to check in with your human partner
+between tasks. They chose inline execution to spend less, not to answer
+"should I continue?" after every task. Execute all tasks from the plan
+without stopping.
+
+**Rulings, not stalls.** Conflicts, ambiguities, plan defects — decide them.
+The spec is the binding authority, the plan is its argument, and your
+judgment settles what neither answers. Record every decision in the ledger
+as `Ruling: <what you decided> — <why> — <what it costs if wrong>`, and keep
+going. Deviating from the plan without a ledgered ruling is a decision made
+in secret.
+
+Four things stop you, and only these: an irreversible or destructive
+operation; a security-sensitive action; a side effect outside this worktree
+that norms say you ask about first (a merge, a push to a shared branch, a
+publish); and a plan so broken that every path forward is a guess. For
+those, stop and ask.
+
 **Note:** On the DeepSeek Harness subagents ARE available — the `subagent` and
 `subagent_fork` tools run in the background by default. Prefer
 `subagent-driven-development` for executing plans; keep this skill for when the
@@ -51,11 +72,9 @@ those, stop and ask.
 
 - You have a plan from writing-plans and your human partner
   chose inline execution at the handoff.
-- Your harness has no subagent tool. The DeepSeek Harness has one —
-  `subagent` / `subagent_fork` run in the background by default — so treat
-  this bullet as inapplicable and prefer `subagent-driven-development`;
-  when work must stay in the current session, never fabricate a dispatch:
-  run the plan here (see `../using-superpowers/references/dsh-tools.md`).
+- Your harness has no subagent tool (see the per-platform references in
+  `../using-superpowers/references/`). Never fabricate a dispatch; run
+  the plan here.
 - Tasks are mostly independent — the same precondition as
   subagent-driven-development.
 
@@ -326,55 +345,3 @@ Use finishing-a-development-branch.
 | "The reviewer said Minor, so it's Minor" | The label graded the spec's silence. Grade what the person gets. Re-grade, then gate. |
 | "The fix is obvious, no need for a failing test first" | The failing test is the only proof the finding was real and is now gone. Without it you have a diff and a hope. |
 | "I'll fix the minors too while I'm in there" | Every minor you fix is a test, a fix, and a suite run your partner did not ask for. Ledger them; your partner decides. |
-
-## Example Workflow
-
-```
-You: I'm using the executing-plans skill to implement this plan inline.
-
-[Setup: worktree verified]
-[Read plan once: docs/superpowers/plans/feature-plan.md; spec read]
-[Resolve workspace: sdd-workspace docs/superpowers/plans/feature-plan.md — no ledger inside, fresh start]
-[Pre-flight scan: 2 shared-interface rows, 4 self-consistency rows, clean; written to ledger]
-[Create todos for all tasks]
-
-Task 1: Hook installation script
-
-[task-start plan 1 → brief read; BASE a1b2c3d]
-[Step 1: write failing test — written]
-[Step 2: run it — FAIL: install_hook not defined. Matches Expected.]
-[Step 3: implement — written]
-[Step 4: run it — PASS 1/1. Matches Expected.]
-[Step 5: commit — d4e5f6a]
-[Contract: tests ran, output read, no deviations]
-[task-done plan 1 a1b2c3d -- npm test -- hooks → ledger: Task 1: complete (commits a1b2c3d..d4e5f6a, tests: npm test -- hooks → 1/1 pass)]
-
-Task 2: Recovery modes
-
-[task-start plan 2 → brief read; BASE d4e5f6a]
-[Step 2: run failing test — FAIL, but on an import error: Task 1 exported
- installHook, brief consumes install_hook]
-[Ruling: brief's consumer name is a typo against Task 1's Produces block;
- use installHook — Ledger: Task 2: Ruling: install_hook → installHook — matches Task 1 Produces — cost if wrong: one rename]
-[Steps 2-5 as planned; commit b7c8d9e]
-[task-done plan 2 d4e5f6a -- npm test -- recovery → ledger: Task 2: complete (commits d4e5f6a..b7c8d9e, tests: npm test -- recovery → 8/8 pass)]
-
-...
-
-[After all tasks: review-package plan MERGE_BASE HEAD; dispatch code-reviewer, most capable model]
-Reviewer: One Important finding — progress reporting interval hardcoded. Two Minor.
-[Re-grade: Important stands; minors → ledger as deferred]
-[Fix pass: test_progress_interval_configurable RED → extract PROGRESS_INTERVAL → GREEN; suite 12/12; commit]
-[Ledger: Final: fixed hardcoded interval — test_progress_interval_configurable RED→GREEN, suite 12/12]
-
-Rulings I made:
-- Task 2: install_hook → installHook (brief typo; cost if wrong: one rename)
-
-Deferred minors:
-- README lacks a usage example
-- recovery.js could split verify/repair into two files
-
-[Delete this plan's workspace — the record now lives in git]
-
-Using finishing-a-development-branch.
-```
