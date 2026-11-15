@@ -160,7 +160,7 @@ dsh plugin --profile web remove superpowers-dsh
 
 | This plugin | Skills baseline (upstream obra/superpowers) | DSH it targets | Notes |
 | --- | --- | --- | --- |
-| **0.3.4** (this repo, release pending) | v7.0.2 | DSH >= 0.2.0-rc.2 (desktop builds included) | Aligns with upstream v7.0.2 (brainstorming tuning, harness bootstrap fixes, SDD helper fixes); the self-check gains a script-list coverage assertion (`sdd-repo` went unchecked) |
+| **0.3.4** (this repo, released) | v7.0.2 | DSH >= 0.2.0-rc.2 (desktop builds included) | Aligns with upstream v7.0.2 (brainstorming tuning, harness bootstrap fixes, SDD helper fixes); the self-check gains a script-list coverage assertion (`sdd-repo` went unchecked) |
 | **0.3.3** (this repo, released) | v7.0.1 | DSH >= 0.2.0-rc.2 (desktop builds included) | Aligns with upstream v7.0.1 (writing-skills and subagent-driven-development split into references/); fixes stale files and one cross-skill broken link |
 | **0.3.2** (this repo, released) | v7.0.0 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | Corrects the Windows `bash` failure explanation (the default WSL distro may be `docker-desktop`, which ships no bash) and adds the second fix |
 | **0.3.1** (this repo, released) | v7.0.0 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | Documents Windows skill-script invocation (`sh` / Git Bash; bare `bash` hits the WSL stub); self-check gains script and stray-control-character assertions |
