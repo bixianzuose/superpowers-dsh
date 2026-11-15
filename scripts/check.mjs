@@ -126,11 +126,27 @@ const bashHelpers = [
   'skills/brainstorming/scripts/stop-server.sh',
   'skills/executing-plans/scripts/task-start',
   'skills/executing-plans/scripts/task-done',
+  'skills/subagent-driven-development/scripts/sdd-repo',
   'skills/subagent-driven-development/scripts/sdd-workspace',
   'skills/subagent-driven-development/scripts/task-brief',
   'skills/subagent-driven-development/scripts/review-package',
   'skills/systematic-debugging/find-polluter.sh'
 ]
+// 清单覆盖率：skills/ 下每个 bash shebang 脚本都必须登记 —— 上游新增脚本时清单容易漏改，
+// 漏了就等于新脚本静默逃过语法检查（2026-11-15 同步 v7.0.2 时 sdd-repo 就是这样漏的）。
+const bashShebangs = walk(skillsDir)
+  .filter((f) => {
+    const buf = readFileSync(f)
+    if (buf[0] !== 0x23 || buf[1] !== 0x21) return false
+    const line = buf.toString('utf8', 0, Math.min(buf.length, 80)).split('\n')[0]
+    return /(?:^|\/)(?:env\s+)?(?:ba|da)?sh\b/.test(line)
+  })
+  .map((f) => f.slice(root.length + 1).split('\\').join('/'))
+const missingFromList = bashShebangs.filter((f) => !bashHelpers.includes(f))
+const staleInList = bashHelpers.filter((f) => !bashShebangs.includes(f))
+if (missingFromList.length) bad(`bash 脚本未登记进语法检查清单：${missingFromList.join(', ')}`)
+else if (staleInList.length) bad(`语法检查清单登记了不存在或非 bash 脚本：${staleInList.join(', ')}`)
+else ok(`脚本清单：${bashShebangs.length} 个 bash 脚本全部登记`)
 const bash = findBash()
 if (!bash) {
   warn('未找到可用的 bash —— Windows 上技能脚本需要 Git Bash；技能正文里的 `bash scripts/x` 应改用 `sh scripts/x` 或 Git Bash 绝对路径')
