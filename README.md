@@ -128,7 +128,7 @@ dsh plugin --profile web remove superpowers-dsh
 
 | 本插件 | 技能基线（上游 obra/superpowers） | 面向的 DSH | 说明 |
 | --- | --- | --- | --- |
-| **0.3.4**（本仓库，待发布） | v7.0.2 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 对齐上游 v7.0.2（`brainstorming` 调优、harness 引导修复、SDD helper 修复）；自检新增「脚本清单覆盖率」断言（上游新增 `sdd-repo` 曾被漏检） |
+| **0.3.4**（本仓库，已发布） | v7.0.2 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 对齐上游 v7.0.2（`brainstorming` 调优、harness 引导修复、SDD helper 修复）；自检新增「脚本清单覆盖率」断言（上游新增 `sdd-repo` 曾被漏检） |
 | **0.3.3**（本仓库，已发布） | v7.0.1 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 对齐上游 v7.0.1（writing-skills 与 subagent-driven-development 拆进 references/）；修复整体同步漏删的旧路径文件与一处跨技能断链 |
 | **0.3.2**（本仓库，已发布） | v7.0.0 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 修正 Windows 上 `bash` 失败原因的说明（默认 WSL 发行版可能是没有 bash 的 `docker-desktop`），并补上第二种修法 |
 | **0.3.1**（本仓库，已发布） | v7.0.0 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 补 Windows 技能脚本调用约定（裸 `bash` 会落到未装发行版的 WSL 桩，改用 `sh` / Git Bash）；自检新增「技能脚本」与「文本整洁」检查 |
