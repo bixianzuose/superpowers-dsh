@@ -128,7 +128,7 @@ dsh plugin --profile web remove superpowers-dsh
 
 | 本插件 | 技能基线（上游 obra/superpowers） | 面向的 DSH | 说明 |
 | --- | --- | --- | --- |
-| **0.3.5**（本仓库，待发布） | v7.0.2 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 纯仓库维护：修 `package.json` description 的技能基线漂移（曾停在 v7.0.1）、修 README 英文移植说明的拼接损坏、边界段与手册第 5 步对齐（打了 tag 必须发 Release）；自检新增「包描述基线」与「`SKILL.md` 链接完整性」两项断言，删除 v0.3.3 遗留的发布说明 |
+| **0.3.5**（本仓库，已发布） | v7.0.2 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 纯仓库维护：修 `package.json` description 的技能基线漂移（曾停在 v7.0.1）、修 README 英文移植说明的拼接损坏、边界段与手册第 5 步对齐（打了 tag 必须发 Release）；自检新增「包描述基线」与「`SKILL.md` 链接完整性」两项断言，删除 v0.3.3 遗留的发布说明 |
 | **0.3.4**（本仓库，已发布） | v7.0.2 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 对齐上游 v7.0.2（`brainstorming` 调优、harness 引导修复、SDD helper 修复）；自检新增「脚本清单覆盖率」断言（上游新增 `sdd-repo` 曾被漏检） |
 | **0.3.3**（本仓库，已发布） | v7.0.1 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 对齐上游 v7.0.1（writing-skills 与 subagent-driven-development 拆进 references/）；修复整体同步漏删的旧路径文件与一处跨技能断链 |
 | **0.3.2**（本仓库，已发布） | v7.0.0 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 修正 Windows 上 `bash` 失败原因的说明（默认 WSL 发行版可能是没有 bash 的 `docker-desktop`），并补上第二种修法 |
