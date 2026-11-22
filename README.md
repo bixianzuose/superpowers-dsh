@@ -77,8 +77,8 @@ dsh plugin --profile web add https://github.com/bixianzuose/superpowers-dsh.git
 ### 从 tarball 或本地文件夹安装
 
 ```sh
-# tarball（例如仓库根目录的 superpowers-dsh-0.3.4.tgz）
-dsh plugin --profile web add C:\路径\to\superpowers-dsh-0.3.4.tgz
+# tarball（例如仓库根目录的 superpowers-dsh-0.3.5.tgz）
+dsh plugin --profile web add C:\路径\to\superpowers-dsh-0.3.5.tgz
 
 # 或解压后的插件文件夹（pnpm 以链接方式安装，改完重启即生效）
 dsh plugin --profile web add C:\路径\to\superpowers-dsh
@@ -128,6 +128,7 @@ dsh plugin --profile web remove superpowers-dsh
 
 | 本插件 | 技能基线（上游 obra/superpowers） | 面向的 DSH | 说明 |
 | --- | --- | --- | --- |
+| **0.3.5**（本仓库，待发布） | v7.0.2 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 纯仓库维护：修 `package.json` description 的技能基线漂移（曾停在 v7.0.1）、修 README 英文移植说明的拼接损坏、边界段与手册第 5 步对齐（打了 tag 必须发 Release）；自检新增「包描述基线」与「`SKILL.md` 链接完整性」两项断言，删除 v0.3.3 遗留的发布说明 |
 | **0.3.4**（本仓库，已发布） | v7.0.2 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 对齐上游 v7.0.2（`brainstorming` 调优、harness 引导修复、SDD helper 修复）；自检新增「脚本清单覆盖率」断言（上游新增 `sdd-repo` 曾被漏检） |
 | **0.3.3**（本仓库，已发布） | v7.0.1 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 对齐上游 v7.0.1（writing-skills 与 subagent-driven-development 拆进 references/）；修复整体同步漏删的旧路径文件与一处跨技能断链 |
 | **0.3.2**（本仓库，已发布） | v7.0.0 | DSH ≥ 0.2.0-rc.2（含 Desktop 版） | 修正 Windows 上 `bash` 失败原因的说明（默认 WSL 发行版可能是没有 bash 的 `docker-desktop`），并补上第二种修法 |
@@ -231,14 +232,15 @@ dsh plugin --profile <你的 profile> add @deepseek-ai/dsh-hooks-claude-code@0.2
 
 本仓库自带一套自维护流程，每周由本机计划任务触发一次，也可以手动跑：
 
-- `scripts/check.mjs` —— 零依赖自检：技能树完整性、命名空间前缀残留、冲突标记、hook 可执行性、包清单、提供者契约回归测试。
+- `scripts/check.mjs` —— 零依赖自检：技能树完整性、命名空间前缀残留、冲突标记、hook 可执行性、包清单、版本与发布产物一致性、包描述里的技能基线、脚本清单覆盖率、技能脚本语法、文本控制字符、`SKILL.md` 链接完整性、提供者契约回归测试。
   改动前后都该跑，退出码 0 才算过（维护任务把它当作 TDD 的测试入口）。
 - `test/provider.test.mjs` —— 提供者契约回归测试（`node:test`，无依赖）：`list()` 必须按 frontmatter 大小计费而不是技能正文大小，`get()` 必须返回完整正文与目录资源基。
 - `.maintenance/weekly-task.md` —— 维护手册，执行 agent 的唯一依据：体检 → 处理 PR/issue → 修 bug → 与上游对齐 → 出报告。
 - `.maintenance/state.md` —— 上游对齐基线（当前 v7.0.2），维护任务据此判断有没有增量。
 - `scripts/weekly-maintenance.ps1` —— 驱动脚本，用 headless dsh 跑维护手册；日志落 `.maintenance/logs/`（已 gitignore），
   报告落 `.maintenance/reports/`。
-- 计划任务名：`superpowers-dsh-weekly-maintenance`（每周日 03:00）。
+- 计划任务名：`superpowers-dsh-weekly-maintenance`（每周日 **10:00**，Asia/Shanghai，由 DSH 计划任务触发）。
+  Windows 上同名 schtasks 条目只是同一脚本的手动驱动，**当前处于 Disabled**，不要把它当触发器。
 
 手动跑一次：
 
@@ -246,8 +248,9 @@ dsh plugin --profile <你的 profile> add @deepseek-ai/dsh-hooks-claude-code@0.2
 pwsh -File scripts/weekly-maintenance.ps1
 ```
 
-边界：维护任务只在分支上动手并开 PR，**不 push main、不自动打 tag / 发 Release、不引入运行时依赖**；
-版本号与发布仍由人工决定。合并上游新 tag 后更新 `.maintenance/state.md` 的基线。
+边界：维护任务只在分支上动手并开 PR，**不直接 push main、不引入运行时依赖**。
+版本更新的周按手册第 5 步走完整条发布链（升版本 → `npm pack` → 仓库只留最新 tgz → 合并后打 tag + 发 Release，
+**打了 tag 必须发 Release**）；没有版本更新的周不动版本号、不打 tag。合并上游新 tag 后更新 `.maintenance/state.md` 的基线。
 
 ## 与上游同步
 

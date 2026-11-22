@@ -106,8 +106,8 @@ dsh plugin --profile web add https://github.com/bixianzuose/superpowers-dsh.git
 ### Install from a tarball or a local folder
 
 ```sh
-# tarball (e.g. the repo-root asset superpowers-dsh-0.3.4.tgz)
-dsh plugin --profile web add C:\path\to\superpowers-dsh-0.3.4.tgz
+# tarball (e.g. the repo-root asset superpowers-dsh-0.3.5.tgz)
+dsh plugin --profile web add C:\path\to\superpowers-dsh-0.3.5.tgz
 
 # or the unpacked package folder (pnpm links it, so edits take effect on restart)
 dsh plugin --profile web add C:\path\to\superpowers-dsh
@@ -160,6 +160,7 @@ dsh plugin --profile web remove superpowers-dsh
 
 | This plugin | Skills baseline (upstream obra/superpowers) | DSH it targets | Notes |
 | --- | --- | --- | --- |
+| **0.3.5** (this repo, pending release) | v7.0.2 | DSH >= 0.2.0-rc.2 (desktop builds included) | Repository upkeep only: fixes the skills baseline drift in the `package.json` description (it was stuck on v7.0.1), repairs the spliced English porting notes, and aligns the boundaries section with step 5 of the handbook (a tag must ship with a Release); the self-check gains "package description baseline" and "`SKILL.md` link integrity" assertions, and the leftover v0.3.3 release notes are removed |
 | **0.3.4** (this repo, released) | v7.0.2 | DSH >= 0.2.0-rc.2 (desktop builds included) | Aligns with upstream v7.0.2 (brainstorming tuning, harness bootstrap fixes, SDD helper fixes); the self-check gains a script-list coverage assertion (`sdd-repo` went unchecked) |
 | **0.3.3** (this repo, released) | v7.0.1 | DSH >= 0.2.0-rc.2 (desktop builds included) | Aligns with upstream v7.0.1 (writing-skills and subagent-driven-development split into references/); fixes stale files and one cross-skill broken link |
 | **0.3.2** (this repo, released) | v7.0.0 | DSH ≥ 0.2.0-rc.2 (desktop builds included) | Corrects the Windows `bash` failure explanation (the default WSL distro may be `docker-desktop`, which ships no bash) and adds the second fix |
@@ -271,13 +272,9 @@ bash needed) emitting `hookSpecificOutput.additionalContext`.
 - Subagent references map to DSH's `subagent` / `subagent_fork` tools.
 - `brainstorming`'s visual companion adds a Windows note: the Node server
   (`scripts/server.cjs`) runs everywhere; the `.sh` helpers are bash-only.
-- **Skills baseline: obra/superpowers v7.0.2.** v7.0.1 splits writing-skills and subagent-driven-development into references/; v7.0.2 tunes `brainstorming`, fixes harness bootstrap and the `subagent-driven-development` helpers (new `scripts/sdd-repo`, five historical test documents dropped from `systematic-debugging`). the previous baseline (v6.4.2) rewrote
-  `executing-plans` as native execution (task ledger, `task-start` /
-  `task-done` scripts, one whole-branch review at the end) and added
-  diagnosing-superpowers; this package re-applied every DSH adaptation on
+- **Skills baseline: obra/superpowers v7.0.2.** v7.0.1 splits writing-skills and subagent-driven-development into references/; v7.0.2 tunes `brainstorming`, fixes harness bootstrap and the `subagent-driven-development` helpers (new `scripts/sdd-repo`, five historical test documents dropped from `systematic-debugging`).
 - v7.0.0 rebuilt `brainstorming` (routing by project type, added `builder-check-prompt.md`, dropped `spec-document-reviewer-prompt.md`) and fixed Windows hook invocation; this package replayed the DSH adaptations (4 prefix removals, exec bits back to upstream `100755`).
-  top (bare skill names, `subagent` / `subagent_fork` wording, pointers to
-  `dsh-tools.md`).
+- The previous baseline (v6.4.2) rewrote `executing-plans` as native execution (task ledger, `task-start` / `task-done` scripts, one whole-branch review at the end) and added `diagnosing-superpowers`; this package re-applied every DSH adaptation on top (bare skill names, `subagent` / `subagent_fork` wording, pointers to `dsh-tools.md`).
 - Upstream's per-harness tool references (Claude Code, Codex, Pi, Antigravity,
   Hermes, Muse) are not shipped here; this bundle carries only the DSH
   mapping, `references/dsh-tools.md`.
@@ -289,7 +286,10 @@ task (or run by hand):
 
 - `scripts/check.mjs` — dependency-free self-check: skill tree integrity,
   leftover namespace prefixes, merge markers, hook executability, package
-  manifest, provider contract regression test. Run it before and after any
+  manifest, version/release-artifact consistency, the skills baseline stated in
+  the package description, script-list coverage, skill-script syntax, stray
+  control characters, `SKILL.md` link integrity, and the provider contract
+  regression test. Run it before and after any
   change; exit code 0 is the bar, and the maintenance task uses it as its TDD
   entry point.
 - `test/provider.test.mjs` — provider contract regression test (`node:test`, no
@@ -303,7 +303,10 @@ task (or run by hand):
 - `scripts/weekly-maintenance.ps1` — driver script: runs the handbook through
   headless dsh; logs land in `.maintenance/logs/` (gitignored), reports in
   `.maintenance/reports/`.
-- Scheduled task name: `superpowers-dsh-weekly-maintenance` (Sundays 03:00).
+- Scheduled task name: `superpowers-dsh-weekly-maintenance` (Sundays **10:00**,
+  Asia/Shanghai, driven by a DSH schedule). The same-named Windows schtasks entry
+  is only a manual driver for that script and is currently **Disabled** — it is
+  not the trigger.
 
 Run it by hand:
 
@@ -312,9 +315,11 @@ pwsh -File scripts/weekly-maintenance.ps1
 ```
 
 Boundaries: the task works on branches and opens PRs only — it never pushes to
-main, never tags or publishes a release, and never adds a runtime dependency.
-Version bumps and releases stay a human decision; after merging a new upstream
-tag, update the baseline in `.maintenance/state.md`.
+main directly and never adds a runtime dependency. In a week with a version
+bump it walks the whole step-5 release chain (bump → `npm pack` → keep only the
+newest tarball → tag + Release after the merge; **a tag without a Release is not
+allowed**); in a week without one it leaves the version and tags alone. After
+merging a new upstream tag, update the baseline in `.maintenance/state.md`.
 
 ## Staying in sync with upstream
 

@@ -1,7 +1,7 @@
 {
   "name": "superpowers-dsh",
-  "description": "Superpowers for the DeepSeek Harness: TDD, debugging, planning, and collaboration skills adapted from obra/superpowers (skills baseline v7.0.1)",
-  "version": "0.3.4",
+  "description": "Superpowers for the DeepSeek Harness: TDD, debugging, planning, and collaboration skills adapted from obra/superpowers (skills baseline v7.0.2)",
+  "version": "0.3.5",
   "private": false,
   "type": "module",
   "main": "lib/index.js",

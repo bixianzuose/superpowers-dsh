@@ -4,8 +4,8 @@
 
 - 上游仓库：https://github.com/obra/superpowers
 - **已对齐的上游 tag：v7.0.2**（commit `22f0b46`）
-- 本仓库发布版本：**v0.3.4**（2026-11-15 发布）
-- `package.json` 版本：**0.3.4**
+- 本仓库发布版本：**v0.3.4**（2026-11-15 发布）；**v0.3.5** 已备版本，待合并后打 tag
+- `package.json` 版本：**0.3.5**
 - 建立基线：2026-10-02（2026-10-03 / 10-04 / 10-11 复核与推进）
 
 ## 对齐方式（重放规则）
@@ -33,3 +33,4 @@
 | 2026-10-11 (3) | v7.0.0 | 0.3.2 | 修正 `bash` 失败原因的描述：WSL 已安装、默认发行版是无 bash 的 `docker-desktop`（并非"未安装发行版"）；补 `wsl --set-default Ubuntu` 修法与取舍说明（作者指出后复核更正） |
 | 2026-11-15 | v7.0.2 | 0.3.4 | 上游发布 v7.0.2（brainstorming 调优、harness 引导修复、SDD helper 修复）：同步 13 改 / 1 增（`scripts/sdd-repo`）/ 5 删（`systematic-debugging` 历史测试文档），重放去前缀 22 处与 `executing-plans` 的 DSH Note 块；自检新增「脚本清单覆盖率」断言，修掉上游新增 helper 被漏检的盲区（8 → 9 个脚本受检）；v0.3.3 已发布 |
 | 2026-10-04 | v6.4.2 | 0.2.1 | 上游无变化（`v6.4.2..upstream/main` = 0 提交）；同步发布事实：v0.2.1 已于 2026-10-03 发布，tag → `b56932a` |
+| 2026-11-22 | v7.0.2 | 0.3.5 | 上游无新 tag（`v7.0.2..upstream/main` = 0 提交）；本轮纯仓库维护走 patch 位：修 `package.json` description 的技能基线漂移（v7.0.1 → v7.0.2）、修 README 英文移植说明的拼接损坏、把边界段与手册第 5 步对齐（打 tag 必发 Release）、自检新增「包描述基线」与「`SKILL.md` 链接完整性」两项断言、删除 v0.3.3 遗留的 `.release-notes-033.md` |
