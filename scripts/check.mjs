@@ -103,6 +103,19 @@ else {
   else if (inPkgJson !== pkg.version) bad(`state.md 记录的 package.json 版本 ${inPkgJson} 与实际 ${pkg.version} 不一致`)
   else ok(`版本一致：package.json ${pkg.version}（已发布 v${released}）`)
 }
+// 4b-2. 包描述里的技能基线与基线真源一致
+// package.json 的 description 里写死了「skills baseline vX.Y.Z」。它不在任何断言覆盖内，
+// 2026-11-22 实测已漂移：state.md 已到 v7.0.2，description 还停在 v7.0.1。
+// 取 state.md 作为基线真源（它就是「上游对齐」的唯一事实来源）。
+if (existsSync(stateFile)) {
+  const stateBaseline = /已对齐的上游 tag：v?([\d.]+)/.exec(readFileSync(stateFile, 'utf8'))?.[1]
+  const descBaseline = /skills baseline v(\d+\.\d+\.\d+)/.exec(pkg.description ?? '')?.[1]
+  if (!stateBaseline) bad('.maintenance/state.md 缺「已对齐的上游 tag」记录')
+  else if (!descBaseline) bad('package.json description 未声明技能基线（"skills baseline vX.Y.Z"）')
+  else if (descBaseline !== stateBaseline) bad(`package.json description 的技能基线 v${descBaseline} 与 state.md 基线 v${stateBaseline} 不一致`)
+  else ok(`包描述基线：description 技能基线 v${descBaseline} 与 state.md 一致`)
+}
+
 // ---- 4c. 发布产物 ----
 // 仓库只保留当前版本的 tarball（发布走 GitHub Release 附件，历史包不该堆在 git 里）。
 const tgzs = readdirSync(root).filter((f) => /^superpowers-dsh-\d+\.\d+\.\d+\.tgz$/.test(f))
@@ -214,6 +227,29 @@ else {
     bad(`提供者契约测试未通过: ${detail || e.message}`)
   }
 }
+
+// ---- 4f. 链接完整性（SKILL.md 入口）----
+// 同步上游时最容易留下的伤是断链：整树 checkout 会保留已删文件，references 被裁掉后
+// 正文里的相对链接就指向空气。只扫 skills/*/SKILL.md —— 那是 agent 真正读到的入口，
+// 且实测该集合当前 0 断链，可以当基线。references/ 下方的示例链接（anthropic-best-practices.md
+// 里指向虚构的 FORMS.md / OOXML.md）是上游正文内容，不在此列，也不该改。
+let linkChecked = 0
+const brokenLinks = []
+for (const d of dirs) {
+  const entry = join(skillsDir, d, 'SKILL.md')
+  if (!existsSync(entry)) continue
+  const text = readFileSync(entry, 'utf8')
+  for (const m of text.matchAll(/\[[^\]]*\]\(([^)\s]+)\)/g)) {
+    let target = m[1]
+    if (/^(?:https?:|mailto:|#)/.test(target)) continue
+    target = target.split('#')[0]
+    if (!target) continue
+    linkChecked++
+    if (!existsSync(join(dirname(entry), target))) brokenLinks.push(`${d}/SKILL.md -> ${m[1]}`)
+  }
+}
+if (brokenLinks.length) bad(`SKILL.md 相对链接断链：${brokenLinks.join('; ')}`)
+else ok(`链接完整性：${dirs.length} 个 SKILL.md 共 ${linkChecked} 条相对链接均可达`)
 
 // ---- 输出 ----
 for (const p of passes) console.log(`PASS  ${p}`)
